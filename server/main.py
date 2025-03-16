@@ -14,7 +14,6 @@ with open("users.txt", "r", encoding="utf-8") as file:
         user, password = line.strip().split(",")
         users[user] = password
 
-
 class QueueModel(BaseModel):
     name: str
 
