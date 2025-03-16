@@ -1,37 +1,56 @@
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from collections import deque
+from database import insert_queue, find_queue, find_all_queues, update_queue, delete_queue
 
 app = FastAPI()
-queues = {}
+
 
 class QueueModel(BaseModel):
     name: str
 
+
 @app.post("/queue/create/")
 def create_queue(queue: QueueModel):
-    if queue.name in queues:
+    if find_queue(queue.name):
         raise HTTPException(status_code=400, detail="Queue already exists")
-    queues[queue.name] = deque()
-    print(queues)
+    insert_queue({"name": queue.name, "messages": []})
+    print(list(find_all_queues()))
     return {"message": "Queue created"}
 
 
 @app.post("/queue/send/")
-def send_message(queue: str, message: str):
-    if not queue in queues:
+def send_message(queueName: str, message: str):
+    queue = find_queue(queueName)
+    if not queue:
         raise HTTPException(status_code=404, detail="Queue not found")
-    queues[queue].append(message)
-    print(queues)
+
+    queue["messages"].append(message)
+    update_queue(queueName, queue["messages"])
+
+    print(find_queue(queueName)["messages"])
     return {"message": "Message sent"}
 
 
 @app.get("/queue/receive/")
-def receive_message(queue: str):
-    if not queue in queues:
+def receive_message(queueName: str):
+    queue = find_queue(queueName)
+    if not queue:
         raise HTTPException(status_code=404, detail="Queue not found")
-    if len(queues[queue]) == 0:
+
+    if len(queue["messages"]) == 0:
         raise HTTPException(status_code=404, detail="Queue is empty")
-    msg = queues[queue].pop()
-    print(queues)
+
+    msg = queue["messages"].pop(0)
+    update_queue(queueName, queue["messages"])
+
     return {"message": msg}
+
+@app.delete("/queue/")
+def delete_one_queue(queueName: str):
+    queue = find_queue(queueName)
+    if not queue:
+        raise HTTPException(status_code=404, detail="Queue not found")
+
+    delete_queue(queueName)
+    return {"message": "Queue deleted"}
+    
