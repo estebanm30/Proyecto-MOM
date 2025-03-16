@@ -1,4 +1,5 @@
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException
+from database import insert_queue, find_queue, find_all_queues, update_queue, delete_queue
 from pydantic import BaseModel
 from collections import deque
 import secrets
@@ -13,12 +14,15 @@ with open("users.txt", "r", encoding="utf-8") as file:
         user, password = line.strip().split(",")
         users[user] = password
 
+
 class QueueModel(BaseModel):
     name: str
+
 
 class AuthModel(BaseModel):
     user: str
     password: str
+
 
 @app.post("/connect/")
 def connect_client(auth: AuthModel):
@@ -33,33 +37,51 @@ def verify_token(token: str):
     if token not in active_sessions:
         raise HTTPException(status_code=401, detail="Invalid or expired token")
 
+
 @app.post("/queue/create/")
 def create_queue(queue: QueueModel, token: str):
     verify_token(token)
-    if queue.name in queues:
+    if find_queue(queue.name):
         raise HTTPException(status_code=400, detail="Queue already exists")
-    queues[queue.name] = deque()
-    print(queues)
+    insert_queue({"name": queue.name, "messages": []})
+    print(list(find_all_queues()))
     return {"message": "Queue created"}
 
 
 @app.post("/queue/send/")
-def send_message(queue: str, message: str, token: str):
+def send_message(queueName: str, message: str, token: str):
     verify_token(token)
-    if not queue in queues:
+    queue = find_queue(queueName)
+    if not queue:
         raise HTTPException(status_code=404, detail="Queue not found")
-    queues[queue].append(message)
-    print(queues)
+
+    queue["messages"].append(message)
+    update_queue(queueName, queue["messages"])
+
+    print(find_queue(queueName)["messages"])
     return {"message": "Message sent"}
 
 
 @app.get("/queue/receive/")
-def receive_message(queue: str, token: str):
+def receive_message(queueName: str, token: str):
     verify_token(token)
-    if not queue in queues:
+    queue = find_queue(queueName)
+    if not queue:
         raise HTTPException(status_code=404, detail="Queue not found")
-    if len(queues[queue]) == 0:
+
+    if len(queue["messages"]) == 0:
         raise HTTPException(status_code=404, detail="Queue is empty")
-    msg = queues[queue].pop()
-    print(queues)
+    msg = queue["messages"].pop(0)
+    update_queue(queueName, queue["messages"])
     return {"message": msg}
+
+
+@app.delete("/queue/")
+def delete_one_queue(queueName: str, token: str):
+    verify_token(token)
+    queue = find_queue(queueName)
+    if not queue:
+        raise HTTPException(status_code=404, detail="Queue not found")
+
+    delete_queue(queueName)
+    return {"message": "Queue deleted"}
