@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, BackgroundTasks
 from database import insert_queue, find_queue, find_all_queues, update_queue, delete_queue
 from pydantic import BaseModel
 from collections import deque
@@ -8,6 +8,9 @@ app = FastAPI()
 queues = {}
 users = {}
 active_sessions = {}
+subscriptions = {}
+pending_messages = {}
+
 
 with open("users.txt", "r", encoding="utf-8") as file:
     for line in file:
@@ -17,6 +20,8 @@ with open("users.txt", "r", encoding="utf-8") as file:
 class QueueModel(BaseModel):
     name: str
 
+class TopicModel(BaseModel):
+    name: str
 
 class AuthModel(BaseModel):
     user: str
@@ -84,3 +89,60 @@ def delete_one_queue(queueName: str, token: str):
 
     delete_queue(queueName)
     return {"message": "Queue deleted"}
+
+
+@app.post("/topic/create/")
+def create_topic(topic: TopicModel, token: str):
+    verify_token(token)
+    if topic.name in queues:  
+        raise HTTPException(status_code=400, detail="Topic already exists")
+    
+    queues[topic.name] = []  
+    return {"message": "Topic created"}
+
+@app.post("/topic/subscribe/")
+def subscribe_to_topic(topic_name: str, token: str):
+    print("Existing topics:", queues.keys())
+    verify_token(token)
+    user = active_sessions[token]  
+
+    if topic_name not in queues:
+        raise HTTPException(status_code=404, detail="Topic not found")
+
+    if topic_name not in subscriptions:
+        subscriptions[topic_name] = []
+
+    if user in subscriptions[topic_name]:
+        raise HTTPException(status_code=400, detail="Already subscribed")
+
+    subscriptions[topic_name].append(user)
+    return {"message": f"{user} subscribed to {topic_name}"}
+
+@app.post("/topic/publish/")
+def publish_message(topic_name: str, message: str, token: str, background_tasks: BackgroundTasks):
+    verify_token(token)
+    if topic_name not in queues:
+        raise HTTPException(status_code=404, detail="Topic not found")
+
+    if topic_name not in subscriptions or not subscriptions[topic_name]:
+        raise HTTPException(status_code=400, detail="No subscribers to this topic")
+
+    
+    for user in subscriptions[topic_name]:
+        if user not in pending_messages:
+            pending_messages[user] = []
+        pending_messages[user].append({"topic": topic_name, "message": message})
+
+    return {"message": f"Message published to {len(subscriptions[topic_name])} subscribers"}
+
+@app.get("/topic/messages/")
+def get_messages(token: str):
+    verify_token(token)
+    user = active_sessions[token]
+
+    if user not in pending_messages or not pending_messages[user]:
+        return {"messages": []}  
+
+    messages = pending_messages[user]
+    pending_messages[user] = []  
+    return {"messages": messages}
