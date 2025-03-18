@@ -1,6 +1,23 @@
 import requests
+import threading
+import time
 
 BASE_URL = "http://localhost:8000"
+stop_event = threading.Event()
+
+
+def listen_for_messages(token):
+    while not stop_event.is_set():
+        response = requests.get(
+            f"{BASE_URL}/topic/messages/", params={"token": token})
+        if response.status_code == 200:
+            messages = response.json().get("messages", [])
+            for msg in messages:
+                print(
+                    f"\n📩 New message on topic {msg['topic']}: {msg['message']}\n")
+        time.sleep(2)
+
+
 print("--------- CONNECT TO A SERVER ---------")
 
 while True:
@@ -14,6 +31,10 @@ while True:
         print("Connected to server")
         print("Token:", connection["token"])
         token = connection["token"]
+        stop_event.clear()
+        listener_thread = threading.Thread(
+            target=listen_for_messages, args=(token,), daemon=True)
+        listener_thread.start()
 
         while True:
             print("-------------------------")
@@ -21,7 +42,11 @@ while True:
             print("2. Send message")
             print("3. Receive message")
             print("4. Delete queue")
-            print("5. Exit")
+            print("5. Create topic")
+            print("6. Suscribe to topic")
+            print("7. Publish message")
+            print("8. Unsubscribe from topic")
+            print("9. Exit")
             print("-------------------------")
             option = input("Select 1 option: ")
             if option == "1":
@@ -46,6 +71,29 @@ while True:
                                            params={"queueName": queue, "token": token})
                 print(response.json())
             elif option == "5":
+                name = input("Enter the topic name to create: ")
+                response = requests.post(
+                    f"{BASE_URL}/topic/create/", json={"name": name}, params={"token": token})
+                print(response.json())
+            elif option == "6":
+                topic = input("Enter the topic name: ")
+                response = requests.put(f"{BASE_URL}/topic/subscribe/",
+                                         params={"topic_name": topic, "token": token})
+                print(response.json())
+            elif option == "7":
+                topic = input("Enter the topic name: ")
+                message = input("Enter the message: ")
+                response = requests.post(f"{BASE_URL}/topic/publish/",
+                                         params={"topic_name": topic, "message": message, "token": token})
+                print(response.json())
+            elif option == "8":
+                topic = input("Enter the topic name: ")
+                response = requests.put(f"{BASE_URL}/topic/unsubscribe/",
+                                        params={"topic_name": topic, "token": token})
+                print(response.json())
+            elif option == "9":
+                stop_event.set()
+                listener_thread.join()
                 break
     else:
         print("Connection failed")
