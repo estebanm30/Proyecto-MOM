@@ -5,6 +5,15 @@ from utils import verify_token
 from state import active_sessions
 
 
+def get_queues(token: str):
+    verify_token(token)
+    queues = find_all_queues()
+    names = []
+    for queue in queues:
+        names.append(queue["name"])
+    return names
+
+
 def create_queue(queue: QueueModel, token: str):
     verify_token(token)
     client = active_sessions[token]
@@ -27,6 +36,7 @@ def send_message(queue_name: str, message: str, token: str):
     print(find_queue(queue_name)["messages"])
     return {"message": "Message sent"}
 
+
 def receive_message(queue_name: str, token: str):
     verify_token(token)
     queue = find_queue(queue_name)
@@ -38,6 +48,7 @@ def receive_message(queue_name: str, token: str):
     msg = queue["messages"].pop(0)
     update_queue(queue_name, queue["messages"])
     return {"message": msg}
+
 
 def delete_one_queue(queue_name: str, token: str):
     verify_token(token)

@@ -6,6 +6,14 @@ from utils import verify_token
 from state import active_sessions
 
 
+def get_topics(token: str):
+    verify_token(token)
+    topics = find_all_topics()
+    names = []
+    for topic in topics:
+        names.append(topic["name"])
+    return names
+
 def create_topic(topic: TopicModel, token: str):
     verify_token(token)
     client = active_sessions[token]
