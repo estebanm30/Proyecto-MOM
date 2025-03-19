@@ -1,3 +1,4 @@
+from termcolor import colored
 import requests
 import threading
 import time
@@ -12,9 +13,9 @@ def listen_for_messages(token):
             f"{BASE_URL}/topic/messages/", params={"token": token})
         if response.status_code == 200:
             messages = response.json().get("messages", [])
-            for msg in messages:
-                print(
-                    f"\n📩 New message on topic {msg['topic']}: {msg['message']}\n")
+            for message in messages:
+                print(colored(
+                    f"\n📩 New message on topic {message['topic']}: {message['message']}\n", "green"))
         time.sleep(2)
 
 
@@ -46,52 +47,69 @@ while True:
             print("6. Suscribe to topic")
             print("7. Publish message")
             print("8. Unsubscribe from topic")
-            print("9. Exit")
+            print("9. Delete topic")
+            print("10. Exit")
             print("-------------------------")
+
             option = input("Select 1 option: ")
+
             if option == "1":
-                name = input("Enter the queue name to create: ")
+                queue_name = input("Enter the queue name to create: ")
                 response = requests.post(
-                    f"{BASE_URL}/queue/create/", json={"name": name}, params={"token": token})
-                print(response.json())
+                    f"{BASE_URL}/queue/create/", json={"name": queue_name}, params={"token": token})
+                print(colored(response.json(),"yellow"))
+
             elif option == "2":
-                queue = input("Enter the queue name: ")
+                queue_name = input("Enter the queue name: ")
                 message = input("Enter the message: ")
                 response = requests.post(f"{BASE_URL}/queue/send/",
-                                         params={"queueName": queue, "message": message, "token": token})
-                print(response.json())
+                                         params={"queue_name": queue_name, "message": message, "token": token})
+                print(colored(response.json(),"yellow"))
+
             elif option == "3":
-                queue = input("Ingrese el nombre de la cola: ")
+                queue_name = input("Ingrese el nombre de la cola: ")
                 response = requests.get(f"{BASE_URL}/queue/receive/",
-                                        params={"queueName": queue, "token": token})
-                print(response.json())
+                                        params={"queue_name": queue_name, "token": token})
+                print(colored(response.json(),"green"))
+
             elif option == "4":
-                queue = input("Ingrese el nombre de la cola: ")
+                queue_name = input("Ingrese el nombre de la cola: ")
                 response = requests.delete(f"{BASE_URL}/queue/",
-                                           params={"queueName": queue, "token": token})
-                print(response.json())
+                                           params={"queue_name": queue_name, "token": token})
+                print(colored(response.json(),"yellow"))
+
             elif option == "5":
-                name = input("Enter the topic name to create: ")
+                topic_name = input("Enter the topic name to create: ")
                 response = requests.post(
-                    f"{BASE_URL}/topic/create/", json={"name": name}, params={"token": token})
-                print(response.json())
+                    f"{BASE_URL}/topic/create/", json={"name": topic_name}, params={"token": token})
+                print(colored(response.json(),"yellow"))
+
             elif option == "6":
-                topic = input("Enter the topic name: ")
+                topic_name = input("Enter the topic name: ")
                 response = requests.put(f"{BASE_URL}/topic/subscribe/",
-                                         params={"topic_name": topic, "token": token})
-                print(response.json())
+                                         params={"topic_name": topic_name, "token": token})
+                print(colored(response.json(),"yellow"))
+
             elif option == "7":
-                topic = input("Enter the topic name: ")
+                topic_name = input("Enter the topic name: ")
                 message = input("Enter the message: ")
                 response = requests.post(f"{BASE_URL}/topic/publish/",
-                                         params={"topic_name": topic, "message": message, "token": token})
-                print(response.json())
+                                         params={"topic_name": topic_name, "message": message, "token": token})
+                print(colored(response.json(),"yellow"))
+
             elif option == "8":
-                topic = input("Enter the topic name: ")
+                topic_name = input("Enter the topic name: ")
                 response = requests.put(f"{BASE_URL}/topic/unsubscribe/",
-                                        params={"topic_name": topic, "token": token})
-                print(response.json())
+                                        params={"topic_name": topic_name, "token": token})
+                print(colored(response.json(),"yellow"))
+
             elif option == "9":
+                topic_name = input("Enter the topic name: ")
+                response = requests.delete(f"{BASE_URL}/topic/",
+                                        params={"topic_name": topic_name, "token": token})
+                print(colored(response.json(),"yellow"))
+
+            elif option == "10":
                 stop_event.set()
                 listener_thread.join()
                 break

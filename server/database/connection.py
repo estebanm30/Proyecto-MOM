@@ -13,5 +13,7 @@ def get_db():
         db.create_collection("Queues")
     if "Topics" not in db.list_collection_names():
         db.create_collection("Topics")
+    if "Clients" not in db.list_collection_names():
+        db.create_collection("Clients")
 
     return db
