@@ -4,6 +4,7 @@ from database import find_client
 from models import AuthModel
 from state import active_sessions
 
+
 def connect_client(auth: AuthModel):
     print("connecting user")
     client = find_client(auth.user)
@@ -16,4 +17,5 @@ def connect_client(auth: AuthModel):
             token = secrets.token_hex(16)
             active_sessions[token] = auth.user
             return {"message": "Connected to server", "token": token}
-    
+        else:
+            raise HTTPException(status_code=401, detail="Wrong password")
