@@ -2,6 +2,7 @@ from termcolor import colored
 import requests
 import threading
 import time
+from zookeeper import get_queue_server, get_topic_server, get_all_queues, get_all_topics, get_servers, get_random_server
 
 BASE_URL = "http://localhost:8000"
 stop_event = threading.Event()
@@ -9,14 +10,31 @@ stop_event = threading.Event()
 
 def listen_for_messages(token):
     while not stop_event.is_set():
-        response = requests.get(
-            f"{BASE_URL}/topic/messages/", params={"token": token})
-        if response.status_code == 200:
-            messages = response.json().get("messages", [])
-            for message in messages:
-                print(colored(
-                    f"\n📩 New message on topic {message['topic']}: {message['message']}\n", "green"))
-        time.sleep(2)
+        servers = get_servers()
+        if not servers:
+            print(colored("⚠ No servers available in Zookeeper!", "red"))
+            time.sleep(2)
+            continue
+
+
+        for server in servers:
+            try:
+                response = requests.get(
+                    f"http://{server}/topic/messages/", params={"token": token}, timeout=5
+                )
+
+                if response.status_code == 200:
+                    messages = response.json().get("messages", [])
+                    for message in messages:
+                        print(
+                            colored(f"📨 Received messages from {server}", "green"))
+                        print(colored(
+                            f"\n📩 New message on topic {message['topic']}: {message['message']}\n", "green"))
+
+            except requests.RequestException as e:
+                print(colored(f"❌ Error connecting to {server}: {e}", "red"))
+
+            time.sleep(2)
 
 
 print("--------- CONNECT TO A SERVER ---------")
@@ -39,7 +57,6 @@ while True:
         stop_event.clear()
         listener_thread = threading.Thread(
             target=listen_for_messages, args=(token,), daemon=True)
-        listener_thread.start()
         print("\033c", end="")
         while True:
             print("-------------------------")
@@ -51,13 +68,10 @@ while True:
             print("\033c", end="")
             if option == "1":
                 while True:
-                    response = requests.get(
-                        f"{BASE_URL}/queue/", params={"token": token})
-                    if response.status_code == 200:
-                        queues = response.json()
-                        print("\nQueues:")
-                        for queue in queues:
-                            print(colored(queue, "yellow"))
+                    queues = get_all_queues()
+                    print("\nQueues:")
+                    for queue in queues:
+                        print(colored(queue, "yellow"))
 
                     print("-------------------------")
                     print("1. Create queue")
@@ -70,24 +84,43 @@ while True:
 
                     if option == "1":
                         queue_name = input("Enter the queue name to create: ")
+                        server_address = get_random_server()
+                        if not server_address:
+                            continue
+
                         response = requests.post(
-                            f"{BASE_URL}/queue/create/", json={"name": queue_name}, params={"token": token})
+                            f"http://{server_address}/queue/create/",
+                            json={"name": queue_name},
+                            params={"token": token}
+                        )
                         print("\033c", end="")
+                        print(server_address, "server selected")
                         print(colored(response.json(), "yellow"))
 
                     elif option == "2":
                         queue_name = input("Enter the queue name: ")
+                        server_address = get_queue_server(queue_name)
+                        if not server_address:
+                            print(colored("❌ Queue not found in Zookeeper!", "red"))
+                            continue
+
                         message = input("Enter the message: ")
-                        response = requests.post(f"{BASE_URL}/queue/send/",
+                        response = requests.post(f"http://{server_address}/queue/send/",
                                                  params={"queue_name": queue_name, "message": message, "token": token})
                         print("\033c", end="")
+                        print(server_address, "server selected")
                         print(colored(response.json(), "yellow"))
 
                     elif option == "3":
                         queue_name = input("Ingrese el nombre de la cola: ")
-                        response = requests.get(f"{BASE_URL}/queue/receive/",
+                        server_address = get_queue_server(queue_name)
+                        if not server_address:
+                            print(colored("❌ Queue not found in Zookeeper!", "red"))
+                            continue
+                        response = requests.get(f"http://{server_address}/queue/receive/",
                                                 params={"queue_name": queue_name, "token": token})
                         print("\033c", end="")
+                        print(server_address, "server selected")
                         print(colored(response.json(), "green"))
 
                     elif option == "4":
@@ -102,14 +135,12 @@ while True:
                         break
 
             elif option == "2":
+                listener_thread.start()
                 while True:
-                    response = requests.get(
-                        f"{BASE_URL}/topic/", params={"token": token})
-                    if response.status_code == 200:
-                        topics = response.json()
-                        print("\nTopics:")
-                        for topic in topics:
-                            print(colored(topic, "yellow"))
+                    topics = get_all_topics()
+                    print("\nTopics:")
+                    for topic in topics:
+                        print(colored(topic, "yellow"))
 
                     print("-------------------------")
                     print("1. Create topic")
@@ -123,46 +154,70 @@ while True:
 
                     if option == "1":
                         topic_name = input("Enter the topic name to create: ")
+                        server_address = get_random_server()
+                        if not server_address:
+                            continue
+
                         response = requests.post(
-                            f"{BASE_URL}/topic/create/", json={"name": topic_name}, params={"token": token})
+                            f"http://{server_address}/topic/create/",
+                            json={"name": topic_name},
+                            params={"token": token}
+                        )
                         print("\033c", end="")
+                        print(server_address, "server selected")
                         print(colored(response.json(), "yellow"))
 
                     elif option == "2":
                         topic_name = input("Enter the topic name: ")
-                        response = requests.put(f"{BASE_URL}/topic/subscribe/",
+                        server_address = get_topic_server(topic_name)
+                        if not server_address:
+                            print(colored("❌ Topic not found in Zookeeper!", "red"))
+                            continue
+                        response = requests.put(f"http://{server_address}/topic/subscribe/",
                                                 params={"topic_name": topic_name, "token": token})
                         print("\033c", end="")
                         print(colored(response.json(), "yellow"))
 
                     elif option == "3":
                         topic_name = input("Enter the topic name: ")
+                        server_address = get_topic_server(topic_name)
+                        if not server_address:
+                            print(colored("❌ Topic not found in Zookeeper!", "red"))
+                            continue
                         message = input("Enter the message: ")
-                        response = requests.post(f"{BASE_URL}/topic/publish/",
+                        response = requests.post(f"http://{server_address}/topic/publish/",
                                                  params={"topic_name": topic_name, "message": message, "token": token})
                         print("\033c", end="")
                         print(colored(response.json(), "yellow"))
 
                     elif option == "4":
                         topic_name = input("Enter the topic name: ")
-                        response = requests.put(f"{BASE_URL}/topic/unsubscribe/",
+                        server_address = get_topic_server(topic_name)
+                        if not server_address:
+                            print(colored("❌ Topic not found in Zookeeper!", "red"))
+                            continue
+                        response = requests.put(f"http://{server_address}/topic/unsubscribe/",
                                                 params={"topic_name": topic_name, "token": token})
                         print("\033c", end="")
                         print(colored(response.json(), "yellow"))
 
                     elif option == "5":
                         topic_name = input("Enter the topic name: ")
-                        response = requests.delete(f"{BASE_URL}/topic/",
+                        server_address = get_topic_server(topic_name)
+                        if not server_address:
+                            print(colored("❌ Topic not found in Zookeeper!", "red"))
+                            continue
+                        response = requests.delete(f"http://{server_address}/topic/",
                                                    params={"topic_name": topic_name, "token": token})
                         print("\033c", end="")
                         print(colored(response.json(), "yellow"))
 
                     elif option == "6":
                         print("\033c", end="")
+                        stop_event.set()
+                        listener_thread.join()
                         break
             elif option == "3":
-                stop_event.set()
-                listener_thread.join()
                 break
             else:
                 print("\033c", end="")
