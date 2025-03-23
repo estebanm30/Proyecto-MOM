@@ -4,7 +4,7 @@ from database import insert_topic, find_all_topics, find_topic, update_topic, de
 from models import TopicModel
 from utils import verify_token
 from state import active_sessions
-
+from zookeeper import zk, SERVER_ID, get_token_children
 
 def get_topics(token: str):
     verify_token(token)
@@ -16,17 +16,22 @@ def get_topics(token: str):
 
 def create_topic(topic: TopicModel, token: str):
     verify_token(token)
-    client = active_sessions[token]
+    client = get_token_children(token)
     if find_topic(topic.name):
         raise HTTPException(status_code=400, detail="Topic already exists")
     insert_topic({"name": topic.name, "subscribers": [],
                  "messages": [], "pending_messages": {}, "owner":client})
+    
+    path = f"/mom_topics/{topic.name}"
+    zk.ensure_path(path)
+    zk.set(path, SERVER_ID.encode()) 
+
     return {"message": "Topic created"}
 
 
 def subscribe_to_topic(topic_name: str, token: str):
     verify_token(token)
-    user = active_sessions[token]
+    user = get_token_children(token)
     topic = find_topic(topic_name)
     if not topic:
         raise HTTPException(status_code=404, detail="Topic not found")
@@ -42,7 +47,7 @@ def subscribe_to_topic(topic_name: str, token: str):
 
 def unsubscribe_from_topic(topic_name: str, token: str):
     verify_token(token)
-    user = active_sessions[token]
+    user = get_token_children(token)
     topic = find_topic(topic_name)
     if not topic:
         raise HTTPException(status_code=404, detail="Topic not found")
@@ -80,7 +85,7 @@ def publish_message(topic_name: str, message: str, token: str, background_tasks:
 
 def delete_one_topic(topic_name: str, token: str):
     verify_token(token)
-    client = active_sessions[token]
+    client = get_token_children(token)
     topic = find_topic(topic_name)
     if not topic:
         raise HTTPException(status_code=404, detail="Topic not found")
@@ -93,6 +98,9 @@ def delete_one_topic(topic_name: str, token: str):
         update_topic(topic_name, topic)
         time.sleep(2)
         delete_topic(topic_name)
+        path = f"/mom_topics/{topic_name}"
+        if zk.exists(path):
+            zk.delete(path)
     else:
         return {"message": "You cannot delete this topic"}
     return {"message": "Topic deleted"}
@@ -100,7 +108,7 @@ def delete_one_topic(topic_name: str, token: str):
 
 def get_messages(token: str):
     verify_token(token)
-    user = active_sessions[token]
+    user = get_token_children(token)
     topics = find_all_topics()
     messages = []
     for topic in topics:

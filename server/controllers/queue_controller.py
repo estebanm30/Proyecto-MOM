@@ -3,6 +3,7 @@ from database import insert_queue, find_queue, find_all_queues, update_queue, de
 from models import QueueModel
 from utils import verify_token
 from state import active_sessions
+from zookeeper import zk, SERVER_ID, get_tokens, get_token_children
 
 
 def get_queues(token: str):
@@ -16,10 +17,20 @@ def get_queues(token: str):
 
 def create_queue(queue: QueueModel, token: str):
     verify_token(token)
-    client = active_sessions[token]
+    client = get_token_children(token)
+
+    if not client:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
     if find_queue(queue.name):
         raise HTTPException(status_code=400, detail="Queue already exists")
+
     insert_queue({"name": queue.name, "messages": [], "owner": client})
+
+    path = f"/mom_queues/{queue.name}"
+    zk.ensure_path(path)
+    zk.set(path, SERVER_ID.encode())
+
     print(list(find_all_queues()))
     return {"message": "Queue created"}
 
@@ -52,12 +63,15 @@ def receive_message(queue_name: str, token: str):
 
 def delete_one_queue(queue_name: str, token: str):
     verify_token(token)
-    client = active_sessions[token]
+    client = get_token_children(token)
     queue = find_queue(queue_name)
     if not queue:
         raise HTTPException(status_code=404, detail="Queue not found")
     if queue["owner"] == client:
         delete_queue(queue_name)
+        path = f"/mom_queues/{queue_name}"
+        if zk.exists(path):
+            zk.delete(path)
+        return {"message": "Queue deleted"}
     else:
         return {"message": "You cannot delete this queue"}
-    return {"message": "Queue deleted"}
