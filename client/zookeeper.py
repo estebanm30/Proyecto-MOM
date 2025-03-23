@@ -43,6 +43,10 @@ def get_random_server():
         return None
     return random.choice(servers)
 
+def remove_token(token):
+    token_path = f"/tokens/{token}"
+    if zk.exists(token_path):
+        zk.delete(token_path)
 
 def close_connection():
     zk.stop()

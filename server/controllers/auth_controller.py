@@ -19,7 +19,7 @@ def connect_client(auth: AuthModel):
             path = f"/tokens/{token}"  
 
             if not zk.exists(path):
-                zk.create(path, auth.user.encode(), ephemeral=True, makepath=True)
+                zk.create(path, auth.user.encode(), makepath=True)
             else:
                 zk.set(path, auth.user.encode())
 
