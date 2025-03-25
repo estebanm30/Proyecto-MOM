@@ -91,7 +91,8 @@ try:
                         print("2. Send message")
                         print("3. Receive message")
                         print("4. Delete queue")
-                        print("5. Go back")
+                        print("5. Suscribe to queue")
+                        print("6. Go back")
                         print("-------------------------")
                         option = input("Select 1 option: ")
 
@@ -143,6 +144,16 @@ try:
                             print(colored(response.json(), "yellow"))
 
                         elif option == "5":
+                            queue_name = input("Ingrese el nombre de la cola: ")
+                            server_address = get_queue_server(queue_name)
+                            if check_servers(server_address):
+                                continue
+                            response = requests.put(f"http://{server_address}/queue/subscribe/",
+                                                    params={"queue_name": queue_name, "token": token})
+                            print("\033c", end="")
+                            print(colored(response.json(), "yellow"))
+
+                        elif option == "6":
                             print("\033c", end="")
                             break
 

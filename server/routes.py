@@ -26,6 +26,11 @@ def createq(queue: QueueModel, token: str):
     return create_queue(queue, token)
 
 
+@router.put("/queue/subscribe/")
+def subscribet(queue_name: str, token: str):
+    return subscribe_to_queue(queue_name, token)
+
+
 @router.post("/queue/send/")
 def sendq(queue_name: str, message: str, token: str):
     return send_message(queue_name, message, token)
