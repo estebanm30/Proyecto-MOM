@@ -25,7 +25,7 @@ def create_queue(queue: QueueModel, token: str):
     if find_queue(queue.name):
         raise HTTPException(status_code=400, detail="Queue already exists")
 
-    insert_queue({"name": queue.name, "messages": [], "owner": client})
+    insert_queue({"name": queue.name,"subscribers": [], "messages": [], "pending_messages": {}, "owner": client})
 
     path = f"/mom_queues/{queue.name}"
     zk.ensure_path(path)
@@ -33,6 +33,22 @@ def create_queue(queue: QueueModel, token: str):
 
     print(list(find_all_queues()))
     return {"message": "Queue created"}
+
+
+def subscribe_to_queue(queue_name: str, token: str):
+    verify_token(token)
+    user = get_token_children(token)
+    queue = find_queue(queue_name)
+    if not queue:
+        raise HTTPException(status_code=404, detail="Queue not found")
+    if user in queue["subscribers"]:
+        raise HTTPException(status_code=400, detail="Already subscribed")
+    else: 
+        queue["subscribers"].append(user)
+        queue["pending_messages"][user] = []
+
+    update_queue(queue_name, queue)
+    return {"message": f"{user} subscribed to {queue_name}"}
 
 
 def send_message(queue_name: str, message: str, token: str):

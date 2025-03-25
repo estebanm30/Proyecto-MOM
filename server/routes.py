@@ -1,6 +1,6 @@
 from fastapi import APIRouter, BackgroundTasks
 from controllers.auth_controller import connect_client
-from controllers.queue_controller import create_queue, send_message, receive_message, delete_one_queue, get_queues
+from controllers.queue_controller import create_queue, send_message, receive_message, delete_one_queue, get_queues, subscribe_to_queue
 from controllers.topic_controller import create_topic, subscribe_to_topic, unsubscribe_from_topic, publish_message, get_messages, delete_one_topic, get_topics
 from models import AuthModel, QueueModel, TopicModel
 
