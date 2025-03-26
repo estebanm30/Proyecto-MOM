@@ -1,6 +1,6 @@
 from fastapi import APIRouter, BackgroundTasks
 from controllers.auth_controller import connect_client
-from controllers.queue_controller import create_queue, send_message, receive_message, delete_one_queue, get_queues
+from controllers.queue_controller import create_queue, send_message, receive_message, delete_one_queue, get_queues, subscribe_to_queue, get_messages_queue
 from controllers.topic_controller import create_topic, subscribe_to_topic, unsubscribe_from_topic, publish_message, get_messages, delete_one_topic, get_topics
 from models import AuthModel, QueueModel, TopicModel
 
@@ -26,19 +26,28 @@ def createq(queue: QueueModel, token: str):
     return create_queue(queue, token)
 
 
+@router.put("/queue/subscribe/")
+def subscribet(queue_name: str, token: str):
+    return subscribe_to_queue(queue_name, token)
+
+
 @router.post("/queue/send/")
-def sendq(queue_name: str, message: str, token: str):
-    return send_message(queue_name, message, token)
+def sendq(queue_name: str, message: str, token: str, background_tasks: BackgroundTasks):
+    return send_message(queue_name, message, token, background_tasks)
 
 
 @router.get("/queue/receive/")
 def receiveq(queue_name: str, token: str):
     return receive_message(queue_name, token)
 
-
+@router.get("/queue/messages/")
+def get_messagest(token: str):
+    return get_messages_queue(token)
+    
 @router.delete("/queue/")
 def deleteq(queue_name: str, token: str):
     return delete_one_queue(queue_name, token)
+
 
 # TOPICS ROUTERS
 

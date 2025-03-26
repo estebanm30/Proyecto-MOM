@@ -16,8 +16,8 @@ def find_queue(name):
     return collection.find_one({"name": name})
 
 
-def update_queue(name, messages):
-    return collection.update_one({"name": name}, {"$set": {"messages": messages}})
+def update_queue(name, queue):
+    return collection.update_one({"name": name}, {"$set": queue})
 
 
 def delete_queue(name):

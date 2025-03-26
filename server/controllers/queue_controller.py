@@ -1,4 +1,4 @@
-from fastapi import HTTPException
+from fastapi import HTTPException, BackgroundTasks
 from database import insert_queue, find_queue, find_all_queues, update_queue, delete_queue
 from models import QueueModel
 from utils import verify_token
@@ -25,7 +25,7 @@ def create_queue(queue: QueueModel, token: str):
     if find_queue(queue.name):
         raise HTTPException(status_code=400, detail="Queue already exists")
 
-    insert_queue({"name": queue.name, "messages": [], "owner": client})
+    insert_queue({"name": queue.name,"subscribers": [], "messages": [], "pending_messages": {}, "owner": client})
 
     path = f"/mom_queues/{queue.name}"
     zk.ensure_path(path)
@@ -35,31 +35,74 @@ def create_queue(queue: QueueModel, token: str):
     return {"message": "Queue created"}
 
 
-def send_message(queue_name: str, message: str, token: str):
+def subscribe_to_queue(queue_name: str, token: str):
+    verify_token(token)
+    user = get_token_children(token)
+    queue = find_queue(queue_name)
+    if not queue:
+        raise HTTPException(status_code=404, detail="Queue not found")
+    if user in queue["subscribers"]:
+        raise HTTPException(status_code=400, detail="Already subscribed")
+    else: 
+        queue["subscribers"].append(user)
+        queue["pending_messages"][user] = []
+
+    update_queue(queue_name, queue)
+    return {"message": f"{user} subscribed to {queue_name}"}
+
+
+def send_message(queue_name: str, message: str, token: str, background_tasks: BackgroundTasks):
     verify_token(token)
     queue = find_queue(queue_name)
     if not queue:
         raise HTTPException(status_code=404, detail="Queue not found")
 
-    queue["messages"].append(message)
-    update_queue(queue_name, queue["messages"])
+    if not queue["subscribers"]:
+        queue["messages"].append(message)
+    else:
+        if "current_subscriber_idx" not in queue:
+            queue["current_subscriber_idx"] = 0
+        
+        subscriber_idx = queue["current_subscriber_idx"]
+        subscriber = queue["subscribers"][subscriber_idx]
+        
+        queue["pending_messages"][subscriber].append(message)
+        
+        queue["current_subscriber_idx"] = (subscriber_idx + 1) % len(queue["subscribers"])
 
-    print(find_queue(queue_name)["messages"])
+    update_queue(queue_name, queue)
     return {"message": "Message sent"}
 
 
 def receive_message(queue_name: str, token: str):
     verify_token(token)
+    user = get_token_children(token)
     queue = find_queue(queue_name)
+    
     if not queue:
         raise HTTPException(status_code=404, detail="Queue not found")
-
-    if len(queue["messages"]) == 0:
-        raise HTTPException(status_code=404, detail="Queue is empty")
-    msg = queue["messages"].pop(0)
-    update_queue(queue_name, queue["messages"])
+    
+    if user not in queue["subscribers"]:
+        raise HTTPException(status_code=403, detail="Not subscribed to this queue")
+    
+    if not queue["pending_messages"][user]:
+        raise HTTPException(status_code=404, detail="No pending messages")
+    
+    current_idx = queue.get("current_subscriber_idx", 0)
+    next_subscriber = queue["subscribers"][current_idx]
+    
+    if user != next_subscriber:
+        raise HTTPException(
+            status_code=403,
+            detail="Not your turn (Round Robin in progress)"
+        )
+    
+    msg = queue["pending_messages"][user].pop(0)
+    
+    queue["current_subscriber_idx"] = (current_idx + 1) % len(queue["subscribers"])
+    update_queue(queue_name, queue)
+    
     return {"message": msg}
-
 
 def delete_one_queue(queue_name: str, token: str):
     verify_token(token)
@@ -75,3 +118,27 @@ def delete_one_queue(queue_name: str, token: str):
         return {"message": "Queue deleted"}
     else:
         return {"message": "You cannot delete this queue"}
+
+
+def get_messages_queue(token: str):
+    verify_token(token)
+    user = get_token_children(token)
+    queue = find_all_queues()
+    messages = []
+    for queue in queues:
+        if user in queue['subscribers'] and queue['pending_messages'][user]:
+            messages.append(
+                {"queue": queue['name'], "message": queue['pending_messages'][user]})
+            queue['pending_messages'][user] = []
+            update_queue(queue['name'], queue)
+    queues = find_all_queues()
+    for queue in queues:
+        cont = 0
+        for pending_message in queue['pending_messages'].values():
+            if len(pending_message) > 0:
+                cont += 1
+        if cont == 0:
+            queue['messages'] = []
+            update_queue(queue['name'], queue)
+
+    return {"messages": messages}
