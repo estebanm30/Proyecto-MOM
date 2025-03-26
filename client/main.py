@@ -44,6 +44,9 @@ def listen_for_messages(token):
                 print(colored(f"❌ Error connecting to {server}", "red"))
 
             time.sleep(2)
+
+
+
 token = None
 try:
     print("--------- CONNECT TO A SERVER ---------")
