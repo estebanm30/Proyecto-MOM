@@ -8,13 +8,11 @@ router = APIRouter()
 
 # AUTH ROUTES
 
-
 @router.post("/connect/")
 def connect(auth: AuthModel):
     return connect_client(auth)
 
 # QUEUE ROUTES
-
 
 @router.get("/queue/")
 def receiveq(token: str):
