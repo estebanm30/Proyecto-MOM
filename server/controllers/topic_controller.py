@@ -4,7 +4,7 @@ from database import insert_topic, find_all_topics, find_topic, update_topic, de
 from models import TopicModel
 from utils import verify_token
 from state import active_sessions
-from zookeeper import zk, SERVER_ID, get_token_children
+from zookeeper import zk, SERVER_ID, get_token_children, get_server_for_topic
 
 def get_topics(token: str):
     verify_token(token)
@@ -31,18 +31,27 @@ def create_topic(topic: TopicModel, token: str):
 
 def subscribe_to_topic(topic_name: str, token: str):
     verify_token(token)
-    user = get_token_children(token)
-    topic = find_topic(topic_name)
-    if not topic:
-        raise HTTPException(status_code=404, detail="Topic not found")
-    if user in topic['subscribers']:
-        raise HTTPException(status_code=400, detail="Already subscribed")
-    else:
-        topic['subscribers'].append(user)
-        topic['pending_messages'][user] = []
 
-    update_topic(topic_name, topic)
-    return {"message": f"{user} subscribed to {topic_name}"}
+    if find_topic(topic_name) is None:
+        responsible_server = get_server_for_topic(topic_name)
+
+        if responsible_server:
+            return {
+                "redirect_to": responsible_server,
+            }
+        raise HTTPException(status_code=404, detail="La cola no existe en ningún servidor.")
+    else:
+        user = get_token_children(token)
+        topic = find_topic(topic_name)
+        if user in topic['subscribers']:
+            raise HTTPException(status_code=400, detail="Already subscribed")
+        else:
+            topic['subscribers'].append(user)
+            topic['pending_messages'][user] = []
+
+        update_topic(topic_name, topic)
+        return {"message": f"{user} subscribed to {topic_name}"}
+    
 
 
 def unsubscribe_from_topic(topic_name: str, token: str):
