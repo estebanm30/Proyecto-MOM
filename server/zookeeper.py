@@ -22,13 +22,11 @@ def get_tokens():
         return [f"{child}" for child in children]
     return []
 
-def get_server_for_topic(topic_name):
-    pass
-#     topic_path = f"/topics/{topic_name}"
-#     if zk.exists(topic_path):
-#         data, _ = zk.get(topic_path)
-#         return data.decode()
-#     return None
+def get_topic_server(topic_name: str):
+    path = f"/mom_topics/{topic_name}"
+    if zk.exists(path):
+        return zk.get(path)[0].decode() 
+    return None
 
 def get_token_children(token):
     token_path = f"/tokens/{token}"

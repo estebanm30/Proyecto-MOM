@@ -2,9 +2,9 @@ import time
 from fastapi import HTTPException, BackgroundTasks
 from database import insert_topic, find_all_topics, find_topic, update_topic, delete_topic
 from models import TopicModel
-from utils import verify_token
+from utils import verify_token, check_redirect
 from state import active_sessions
-from zookeeper import zk, SERVER_ID, get_token_children, get_server_for_topic
+from zookeeper import zk, SERVER_ID, get_token_children, get_topic_server
 
 def get_topics(token: str):
     verify_token(token)
@@ -32,14 +32,10 @@ def create_topic(topic: TopicModel, token: str):
 def subscribe_to_topic(topic_name: str, token: str):
     verify_token(token)
 
-    if find_topic(topic_name) is None:
-        responsible_server = get_server_for_topic(topic_name)
+    redirect = check_redirect(topic_name)
 
-        if responsible_server:
-            return {
-                "redirect_to": responsible_server,
-            }
-        raise HTTPException(status_code=404, detail="La cola no existe en ningún servidor.")
+    if redirect:
+        return redirect
     else:
         user = get_token_children(token)
         topic = find_topic(topic_name)
@@ -56,63 +52,78 @@ def subscribe_to_topic(topic_name: str, token: str):
 
 def unsubscribe_from_topic(topic_name: str, token: str):
     verify_token(token)
-    user = get_token_children(token)
-    topic = find_topic(topic_name)
-    if not topic:
-        raise HTTPException(status_code=404, detail="Topic not found")
-    if user not in topic['subscribers']:
-        raise HTTPException(status_code=400, detail="Not subscribed")
-    else:
-        topic['subscribers'].remove(user)
-        topic['pending_messages'].pop(user, None)
-    update_topic(topic_name, topic)
+    redirect = check_redirect(topic_name)
 
-    topics = find_all_topics()
-    for topic in topics:
-        cont = 0
-        for pending_message in topic['pending_messages'].values():
-            if len(pending_message) > 0:
-                cont += 1
-        if cont == 0:
-            topic['messages'] = []
-            update_topic(topic['name'], topic)
-    return {"message": f"{user} unsubscribed from {topic_name}"}
+    if redirect:
+        return redirect
+    else:
+        user = get_token_children(token)
+        topic = find_topic(topic_name)
+        if not topic:
+            raise HTTPException(status_code=404, detail="Topic not found")
+        if user not in topic['subscribers']:
+            raise HTTPException(status_code=400, detail="Not subscribed")
+        else:
+            topic['subscribers'].remove(user)
+            topic['pending_messages'].pop(user, None)
+        update_topic(topic_name, topic)
+
+        topics = find_all_topics()
+        for topic in topics:
+            cont = 0
+            for pending_message in topic['pending_messages'].values():
+                if len(pending_message) > 0:
+                    cont += 1
+            if cont == 0:
+                topic['messages'] = []
+                update_topic(topic['name'], topic)
+        return {"message": f"{user} unsubscribed from {topic_name}"}
 
 
 def publish_message(topic_name: str, message: str, token: str, background_tasks: BackgroundTasks):
     verify_token(token)
-    topic = find_topic(topic_name)
-    if not topic:
-        raise HTTPException(status_code=404, detail="Topic not found")
+    redirect = check_redirect(topic_name)
 
-    topic['messages'].append(message)
-    for subscriber in topic['subscribers']:
-        topic['pending_messages'][subscriber].append(message)
-    update_topic(topic_name, topic)
+    if redirect:
+        return redirect
+    else:
+        topic = find_topic(topic_name)
+        if not topic:
+            raise HTTPException(status_code=404, detail="Topic not found")
 
-    return {"message": f"Message published to {len(topic['subscribers'])} subscribers"}
-
-def delete_one_topic(topic_name: str, token: str):
-    verify_token(token)
-    client = get_token_children(token)
-    topic = find_topic(topic_name)
-    if not topic:
-        raise HTTPException(status_code=404, detail="Topic not found")
-    if topic["owner"] == client:
-
-        message = f"The topic {topic_name} has been eliminated by the owner"
         topic['messages'].append(message)
         for subscriber in topic['subscribers']:
             topic['pending_messages'][subscriber].append(message)
+
         update_topic(topic_name, topic)
-        time.sleep(2)
-        delete_topic(topic_name)
-        path = f"/mom_topics/{topic_name}"
-        if zk.exists(path):
-            zk.delete(path)
+        return {"message": f"Message published to {len(topic['subscribers'])} subscribers"}
+
+def delete_one_topic(topic_name: str, token: str):
+    verify_token(token)
+    redirect = check_redirect(topic_name)
+
+    if redirect:
+        return redirect
     else:
-        return {"message": "You cannot delete this topic"}
-    return {"message": "Topic deleted"}
+        client = get_token_children(token)
+        topic = find_topic(topic_name)
+        if not topic:
+            raise HTTPException(status_code=404, detail="Topic not found")
+        if topic["owner"] == client:
+
+            message = f"The topic {topic_name} has been eliminated by the owner"
+            topic['messages'].append(message)
+            for subscriber in topic['subscribers']:
+                topic['pending_messages'][subscriber].append(message)
+            update_topic(topic_name, topic)
+            time.sleep(2)
+            delete_topic(topic_name)
+            path = f"/mom_topics/{topic_name}"
+            if zk.exists(path):
+                zk.delete(path)
+        else:
+            return {"message": "You cannot delete this topic"}
+        return {"message": "Topic deleted"}
 
 
 def get_messages(token: str):
