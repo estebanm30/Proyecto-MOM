@@ -34,7 +34,7 @@ def subscribe_to_topic(topic_name: str, token: str):
     verify_token(token)
     server_redirect = check_redirect(topic_name)
 
-    if server_redirect:
+    if server_redirect is not None:
         response = requests.put(f"http://{server_redirect}/topic/subscribe/", params={"topic_name": topic_name, "token": token})
         return response
     else:
