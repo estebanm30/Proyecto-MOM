@@ -181,7 +181,7 @@ try:
                         if option == "1":
                             topic_name = input("Enter the topic name to create: ")
                             server_address = get_random_server()
-                            if not server_address:
+                            if check_servers(server_address):
                                 continue
 
                             response = requests.post(
@@ -201,12 +201,7 @@ try:
                             response = requests.put(f"http://{server_address}/topic/subscribe/",
                                                     params={"topic_name": topic_name, "token": token})
                             
-                            if response.status_code == 200:
-                                data = response.json()
-                                if "redirect_to" in data:
-                                    server_address = data['redirect_to']
-                                    response = requests.put(f"http://{server_address}/topic/subscribe/", params={"topic_name": topic_name, "token": token})
-                                    
+                                
                             print("\033c", end="")
                             print(colored(response.json(), "yellow"))
 
@@ -217,13 +212,6 @@ try:
                                 continue
                             message = input("Enter the message: ")
                             response = requests.post(f"http://{server_address}/topic/publish/",
-                                                    params={"topic_name": topic_name, "message": message, "token": token})
-                            
-                            if response.status_code == 200:
-                                data = response.json()  
-                                if "redirect_to" in data:
-                                    server_address = data['redirect_to']
-                                    response = requests.post(f"http://{server_address}/topic/publish/",
                                                     params={"topic_name": topic_name, "message": message, "token": token})
 
                             print("\033c", end="")
@@ -236,14 +224,7 @@ try:
                                 continue
                             response = requests.put(f"http://{server_address}/topic/unsubscribe/",
                                                     params={"topic_name": topic_name, "token": token})
-                            
-                            if response.status_code == 200:
-                                data = response.json()
-                                if "redirect_to" in data:
-                                    server_address = data['redirect_to']
-                                    response = requests.put(f"http://{server_address}/topic/unsubscribe/",
-                                                    params={"topic_name": topic_name, "token": token})
-                                    
+                                   
                             print("\033c", end="")
                             print(colored(response.json(), "yellow"))
 
@@ -252,15 +233,8 @@ try:
                             server_address = get_random_server()
                             if check_servers(server_address):
                                 continue
-                            response = requests.delete(f"http://{server_address}/topic/",
-                                                    params={"topic_name": topic_name, "token": token})
+                            response = requests.delete(f"http://{server_address}/topic/",params={"topic_name": topic_name, "token": token})
                             
-                            if response.status_code == 200:
-                                data = response.json()
-                                if "redirect_to" in data:
-                                    server_address = data['redirect_to']
-                                    response = requests.delete(f"http://{server_address}/topic/",
-                                                    params={"topic_name": topic_name, "token": token})
                             print("\033c", end="")
                             print(colored(response.json(), "yellow"))
 

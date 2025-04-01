@@ -13,10 +13,7 @@ def verify_token(token: str):
 def check_redirect(topic_name: str):
     if find_topic(topic_name) is None:
         responsible_server = get_topic_server(topic_name)
-
         if responsible_server:
-            return {
-                "redirect_to": responsible_server,
-            }
+            return responsible_server
         raise HTTPException(status_code=404, detail="Topic not found.")
     return None

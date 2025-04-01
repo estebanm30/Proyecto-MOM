@@ -1,5 +1,6 @@
 import time
 from fastapi import HTTPException, BackgroundTasks
+import requests
 from database import insert_topic, find_all_topics, find_topic, update_topic, delete_topic
 from models import TopicModel
 from utils import verify_token, check_redirect
@@ -31,11 +32,11 @@ def create_topic(topic: TopicModel, token: str):
 
 def subscribe_to_topic(topic_name: str, token: str):
     verify_token(token)
+    server_redirect = check_redirect(topic_name)
 
-    redirect = check_redirect(topic_name)
-
-    if redirect:
-        return redirect
+    if server_redirect:
+        response = requests.put(f"http://{server_redirect}/topic/subscribe/", params={"topic_name": topic_name, "token": token})
+        return response
     else:
         user = get_token_children(token)
         topic = find_topic(topic_name)
@@ -52,10 +53,11 @@ def subscribe_to_topic(topic_name: str, token: str):
 
 def unsubscribe_from_topic(topic_name: str, token: str):
     verify_token(token)
-    redirect = check_redirect(topic_name)
+    server_redirect = check_redirect(topic_name)
 
-    if redirect:
-        return redirect
+    if server_redirect:
+        response = requests.put(f"http://{server_redirect}/topic/unsubscribe/",params={"topic_name": topic_name, "token": token})
+        return response
     else:
         user = get_token_children(token)
         topic = find_topic(topic_name)
@@ -82,10 +84,12 @@ def unsubscribe_from_topic(topic_name: str, token: str):
 
 def publish_message(topic_name: str, message: str, token: str, background_tasks: BackgroundTasks):
     verify_token(token)
-    redirect = check_redirect(topic_name)
+    server_redirect = check_redirect(topic_name)
 
-    if redirect:
-        return redirect
+    if server_redirect:
+        response = requests.post(f"http://{server_redirect}/topic/publish/",
+                        params={"topic_name": topic_name, "message": message, "token": token})
+        return response
     else:
         topic = find_topic(topic_name)
         if not topic:
@@ -100,10 +104,11 @@ def publish_message(topic_name: str, message: str, token: str, background_tasks:
 
 def delete_one_topic(topic_name: str, token: str):
     verify_token(token)
-    redirect = check_redirect(topic_name)
+    server_redirect = check_redirect(topic_name)
 
-    if redirect:
-        return redirect
+    if server_redirect:
+        response = requests.delete(f"http://{server_redirect}/topic/",params={"topic_name": topic_name, "token": token})
+        return response
     else:
         client = get_token_children(token)
         topic = find_topic(topic_name)
