@@ -55,7 +55,7 @@ def unsubscribe_from_topic(topic_name: str, token: str):
     verify_token(token)
     server_redirect = check_redirect(topic_name)
 
-    if server_redirect:
+    if server_redirect is not None:
         response = requests.put(f"http://{server_redirect}/topic/unsubscribe/",params={"topic_name": topic_name, "token": token})
         return response
     else:
@@ -86,7 +86,7 @@ def publish_message(topic_name: str, message: str, token: str, background_tasks:
     verify_token(token)
     server_redirect = check_redirect(topic_name)
 
-    if server_redirect:
+    if server_redirect is not None:
         response = requests.post(f"http://{server_redirect}/topic/publish/",
                         params={"topic_name": topic_name, "message": message, "token": token})
         return response
@@ -106,7 +106,7 @@ def delete_one_topic(topic_name: str, token: str):
     verify_token(token)
     server_redirect = check_redirect(topic_name)
 
-    if server_redirect:
+    if server_redirect is not None:
         response = requests.delete(f"http://{server_redirect}/topic/",params={"topic_name": topic_name, "token": token})
         return response
     else:
