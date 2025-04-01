@@ -161,7 +161,9 @@ try:
                             break
 
                 elif option == "2":
+                    listener_thread = threading.Thread(target=listen_for_messages, args=(token,), daemon=True)
                     listener_thread.start()
+
                     while True:
                         topics = get_all_topics()
                         print("\nTopics:")
@@ -238,6 +240,7 @@ try:
                             print("\033c", end="")
                             stop_event.set()
                             listener_thread.join()
+                            stop_event.clear()
                             break
                 elif option == "3":
                     remove_token(token)
