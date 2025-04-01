@@ -12,12 +12,6 @@ def get_queue_server(queue_name: str):
         return zk.get(path)[0].decode() 
     return None
 
-def get_topic_server(topic_name: str):
-    path = f"/mom_topics/{topic_name}"
-    if zk.exists(path):
-        return zk.get(path)[0].decode() 
-    return None
-
 def get_all_queues():
     queues_path = "/mom_queues"
     if zk.exists(queues_path):  # Verifica si el nodo existe

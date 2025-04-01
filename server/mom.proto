@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+service MOMService {
+    rpc UpdateQueue(UpdateQueueRequest) returns (UpdateQueueResponse);
+    rpc UpdateTopic(UpdateTopicRequest) returns (UpdateTopicResponse);
+}
+
+message UpdateQueueRequest {
+    string queue_name = 1;
+    repeated string messages = 2;
+}
+
+message UpdateQueueResponse {
+    bool success = 1;
+}
+
+message UpdateTopicRequest {
+    string topic_name = 1;
+    repeated string messages = 2;
+}
+
+message UpdateTopicResponse {
+    bool success = 1;
+}

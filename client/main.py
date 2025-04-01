@@ -2,7 +2,7 @@ from termcolor import colored
 import requests
 import threading
 import time
-from zookeeper import get_queue_server, get_topic_server, get_all_queues, get_all_topics, get_servers, get_random_server, remove_token
+from zookeeper import get_queue_server, get_all_queues, get_all_topics, get_servers, get_random_server, remove_token
 
 BASE_URL = "http://localhost:8000"
 stop_event = threading.Event()
@@ -183,7 +183,7 @@ try:
                         if option == "1":
                             topic_name = input("Enter the topic name to create: ")
                             server_address = get_random_server()
-                            if not server_address:
+                            if check_servers(server_address):
                                 continue
 
                             response = requests.post(
@@ -197,42 +197,46 @@ try:
 
                         elif option == "2":
                             topic_name = input("Enter the topic name: ")
-                            server_address = get_topic_server(topic_name)
+                            server_address = get_random_server()
                             if check_servers(server_address):
                                 continue
                             response = requests.put(f"http://{server_address}/topic/subscribe/",
                                                     params={"topic_name": topic_name, "token": token})
+                            
+                                
                             print("\033c", end="")
                             print(colored(response.json(), "yellow"))
 
                         elif option == "3":
                             topic_name = input("Enter the topic name: ")
-                            server_address = get_topic_server(topic_name)
+                            server_address = get_random_server()
                             if check_servers(server_address):
                                 continue
                             message = input("Enter the message: ")
                             response = requests.post(f"http://{server_address}/topic/publish/",
                                                     params={"topic_name": topic_name, "message": message, "token": token})
+
                             print("\033c", end="")
                             print(colored(response.json(), "yellow"))
 
                         elif option == "4":
                             topic_name = input("Enter the topic name: ")
-                            server_address = get_topic_server(topic_name)
+                            server_address = get_random_server()
                             if check_servers(server_address):
                                 continue
                             response = requests.put(f"http://{server_address}/topic/unsubscribe/",
                                                     params={"topic_name": topic_name, "token": token})
+                                   
                             print("\033c", end="")
                             print(colored(response.json(), "yellow"))
 
                         elif option == "5":
                             topic_name = input("Enter the topic name: ")
-                            server_address = get_topic_server(topic_name)
+                            server_address = get_random_server()
                             if check_servers(server_address):
                                 continue
-                            response = requests.delete(f"http://{server_address}/topic/",
-                                                    params={"topic_name": topic_name, "token": token})
+                            response = requests.delete(f"http://{server_address}/topic/",params={"topic_name": topic_name, "token": token})
+                            
                             print("\033c", end="")
                             print(colored(response.json(), "yellow"))
 
