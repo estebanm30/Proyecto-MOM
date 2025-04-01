@@ -7,6 +7,7 @@ from utils import verify_token, check_redirect
 from state import active_sessions
 from zookeeper import zk, SERVER_ID, get_token_children, get_topic_server
 
+
 def get_topics(token: str):
     verify_token(token)
     topics = find_all_topics()
@@ -15,17 +16,18 @@ def get_topics(token: str):
         names.append(topic["name"])
     return names
 
+
 def create_topic(topic: TopicModel, token: str):
     verify_token(token)
     client = get_token_children(token)
     if find_topic(topic.name):
         raise HTTPException(status_code=400, detail="Topic already exists")
     insert_topic({"name": topic.name, "subscribers": [],
-                 "messages": [], "pending_messages": {}, "owner":client})
-    
+                 "messages": [], "pending_messages": {}, "owner": client})
+
     path = f"/mom_topics/{topic.name}"
     zk.ensure_path(path)
-    zk.set(path, SERVER_ID.encode()) 
+    zk.set(path, SERVER_ID.encode())
 
     return {"message": "Topic created"}
 
@@ -35,8 +37,12 @@ def subscribe_to_topic(topic_name: str, token: str):
     server_redirect = check_redirect(topic_name)
 
     if server_redirect is not None:
-        response = requests.put(f"http://{server_redirect}/topic/subscribe/", params={"topic_name": topic_name, "token": token})
-        return response
+        try:
+            response = requests.put(f"http://{server_redirect}/topic/subscribe/", params={
+                                    "topic_name": topic_name, "token": token})
+            return response
+        except:
+            raise HTTPException(status_code=404, detail="Server not found")
     else:
         user = get_token_children(token)
         topic = find_topic(topic_name)
@@ -48,7 +54,6 @@ def subscribe_to_topic(topic_name: str, token: str):
 
         update_topic(topic_name, topic)
         return {"message": f"{user} subscribed to {topic_name}"}
-    
 
 
 def unsubscribe_from_topic(topic_name: str, token: str):
@@ -56,8 +61,12 @@ def unsubscribe_from_topic(topic_name: str, token: str):
     server_redirect = check_redirect(topic_name)
 
     if server_redirect is not None:
-        response = requests.put(f"http://{server_redirect}/topic/unsubscribe/",params={"topic_name": topic_name, "token": token})
-        return response
+        try:
+            response = requests.put(f"http://{server_redirect}/topic/unsubscribe/", params={
+                                    "topic_name": topic_name, "token": token})
+            return response
+        except:
+            raise HTTPException(status_code=404, detail="Server not found")
     else:
         user = get_token_children(token)
         topic = find_topic(topic_name)
@@ -87,9 +96,12 @@ def publish_message(topic_name: str, message: str, token: str, background_tasks:
     server_redirect = check_redirect(topic_name)
 
     if server_redirect is not None:
-        response = requests.post(f"http://{server_redirect}/topic/publish/",
-                        params={"topic_name": topic_name, "message": message, "token": token})
-        return response
+        try:
+            response = requests.post(f"http://{server_redirect}/topic/publish/",
+                                     params={"topic_name": topic_name, "message": message, "token": token})
+            return response
+        except:
+            raise HTTPException(status_code=404, detail="Server not found")
     else:
         topic = find_topic(topic_name)
         if not topic:
@@ -102,13 +114,18 @@ def publish_message(topic_name: str, message: str, token: str, background_tasks:
         update_topic(topic_name, topic)
         return {"message": f"Message published to {len(topic['subscribers'])} subscribers"}
 
+
 def delete_one_topic(topic_name: str, token: str):
     verify_token(token)
     server_redirect = check_redirect(topic_name)
 
     if server_redirect is not None:
-        response = requests.delete(f"http://{server_redirect}/topic/",params={"topic_name": topic_name, "token": token})
-        return response
+        try:
+            response = requests.delete(
+                f"http://{server_redirect}/topic/", params={"topic_name": topic_name, "token": token})
+            return response
+        except:
+            raise HTTPException(status_code=404, detail="Server not found")
     else:
         client = get_token_children(token)
         topic = find_topic(topic_name)
