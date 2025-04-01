@@ -40,7 +40,7 @@ def subscribe_to_topic(topic_name: str, token: str):
         try:
             response = requests.put(f"http://{server_redirect}/topic/subscribe/", params={
                                     "topic_name": topic_name, "token": token})
-            return response
+            return response.json()
         except:
             raise HTTPException(status_code=404, detail="Server not found")
     else:
@@ -64,7 +64,7 @@ def unsubscribe_from_topic(topic_name: str, token: str):
         try:
             response = requests.put(f"http://{server_redirect}/topic/unsubscribe/", params={
                                     "topic_name": topic_name, "token": token})
-            return response
+            return response.json()
         except:
             raise HTTPException(status_code=404, detail="Server not found")
     else:
@@ -99,7 +99,7 @@ def publish_message(topic_name: str, message: str, token: str, background_tasks:
         try:
             response = requests.post(f"http://{server_redirect}/topic/publish/",
                                      params={"topic_name": topic_name, "message": message, "token": token})
-            return response
+            return response.json()
         except:
             raise HTTPException(status_code=404, detail="Server not found")
     else:
@@ -123,7 +123,7 @@ def delete_one_topic(topic_name: str, token: str):
         try:
             response = requests.delete(
                 f"http://{server_redirect}/topic/", params={"topic_name": topic_name, "token": token})
-            return response
+            return response.json()
         except:
             raise HTTPException(status_code=404, detail="Server not found")
     else:
