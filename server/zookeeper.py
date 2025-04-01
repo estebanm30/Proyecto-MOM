@@ -1,8 +1,12 @@
 import socket
 from kazoo.client import KazooClient
+import os
+from dotenv import load_dotenv
 import sys
+load_dotenv()
+ZOOKEEPER_ADDRESS = os.getenv("ZOOKEEPER_ADDRESS")
 
-zk = KazooClient(hosts="localhost:2181")
+zk = KazooClient(hosts=ZOOKEEPER_ADDRESS)
 zk.start()
 
 port = int(sys.argv[1]) if len(sys.argv) > 1 else 8000
@@ -27,7 +31,7 @@ def get_token_children(token):
     token_path = f"/tokens/{token}"
     if zk.exists(token_path):
         data, stat = zk.get(token_path)
-        
+
         return data.decode()
     return []
 
