@@ -70,5 +70,4 @@ def serve():
         server.stop(0)
 
 
-if __name__ == "__main__":
-    serve()
+
