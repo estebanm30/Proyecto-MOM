@@ -35,7 +35,8 @@ def create_topic(topic: TopicModel, token: str):
 
 
 def get_grpc_client(server_address):
-    channel = grpc.insecure_channel(server_address)
+    newServer_address = f"{server_address[:server_address.find(':')]}:50051"
+    channel = grpc.insecure_channel(newServer_address)
     return mom_pb2_grpc.TopicServiceStub(channel)
 
 
