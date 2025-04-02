@@ -55,8 +55,7 @@ class MOMService(mom_pb2_grpc.TopicServiceServicer):
 def serve():
     print("GRPC RUNNING...")
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=6))
-    mom_pb2_grpc.add_MOMServiceServicer_to_server(MOMService(), server)
-
+    mom_pb2_grpc.add_TopicServiceServicer_to_server(MOMService(), server)
     port = "50051"
     server.add_insecure_port(f"[::]:{port}")
     server.start()
@@ -68,6 +67,3 @@ def serve():
     except KeyboardInterrupt:
         print("🛑 gRPC server shutted down")
         server.stop(0)
-
-
-
