@@ -73,6 +73,5 @@ def serve():
 def start_grpc_server():
     grpc_thread = threading.Thread(target=serve, daemon=True)
     grpc_thread.start()
-    print("✅ gRPC corriendo en un hilo separado")
 
 
