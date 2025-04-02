@@ -36,7 +36,7 @@ def create_topic(topic: TopicModel, token: str):
 
 def get_grpc_client(server_address):
     channel = grpc.insecure_channel(server_address)
-    return mom_pb2_grpc.MOMServiceStub(channel)
+    return mom_pb2_grpc.TopicServiceStub(channel)
 
 
 def subscribe_to_topic(topic_name: str, token: str):
