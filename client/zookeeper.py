@@ -3,7 +3,7 @@ import random
 
 
 
-zk = KazooClient(hosts="localhost:2181")
+zk = KazooClient(hosts="34.193.123.26")
 zk.start()
 
 def get_queue_server(queue_name: str):

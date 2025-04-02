@@ -4,18 +4,49 @@ import time
 import mom_pb2
 import mom_pb2_grpc
 
+from controllers.topic_controller import (
+    publish_message, subscribe_to_topic, unsubscribe_from_topic, delete_one_topic
+)
+from fastapi import HTTPException, BackgroundTasks
+
 class MOMService(mom_pb2_grpc.MOMServiceServicer):
-    def UpdateQueue(self, request, context):
 
-        print(f"🔄 Updating Queues: {request.queue_name}")
-        print(f"Updated Messages: {request.messages}")
-        return mom_pb2.UpdateQueueResponse(success=True)
+    def Publish(self, request, context):
+        try:
+            background_tasks = BackgroundTasks()
+            response = publish_message(request.topic_name, request.message, request.token, background_tasks)
+            return mom_pb2.Response(message=response["message"])
+        except HTTPException as e:
+            context.set_code(grpc.StatusCode.INVALID_ARGUMENT)
+            context.set_details(e.detail)
+            return mom_pb2.Response(message="Error")
 
-    def UpdateTopic(self, request, context):
+    def Subscribe(self, request, context):
+        try:
+            response = subscribe_to_topic(request.topic_name, request.token)
+            return mom_pb2.Response(message=response["message"])
+        except HTTPException as e:
+            context.set_code(grpc.StatusCode.INVALID_ARGUMENT)
+            context.set_details(e.detail)
+            return mom_pb2.Response(message="Error")
 
-        print(f"🔄 Updating Topic: {request.topic_name}")
-        print(f"Topic Changes: {request.messages}")
-        return mom_pb2.UpdateTopicResponse(success=True)
+    def Unsubscribe(self, request, context):
+        try:
+            response = unsubscribe_from_topic(request.topic_name, request.token)
+            return mom_pb2.Response(message=response["message"])
+        except HTTPException as e:
+            context.set_code(grpc.StatusCode.INVALID_ARGUMENT)
+            context.set_details(e.detail)
+            return mom_pb2.Response(message="Error")
+
+    def DeleteTopic(self, request, context):
+        try:
+            response = delete_one_topic(request.topic_name, request.token)
+            return mom_pb2.Response(message=response["message"])
+        except HTTPException as e:
+            context.set_code(grpc.StatusCode.INVALID_ARGUMENT)
+            context.set_details(e.detail)
+            return mom_pb2.Response(message="Error")
 
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=6))
