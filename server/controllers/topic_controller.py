@@ -47,7 +47,7 @@ def subscribe_to_topic(topic_name: str, token: str):
     if server_redirect is not None:
         try:
             client = get_grpc_client(server_redirect)
-            response = client.Subscribe(mom_pb2.SubscribeRequest(
+            response = client.Subscribe(mom_pb2.SubscriptionRequest(
                 topic_name=topic_name, token=token))
             return {"message": response.message}
         except grpc.RpcError as e:
@@ -75,7 +75,7 @@ def unsubscribe_from_topic(topic_name: str, token: str):
             client = get_grpc_client(server_redirect)
             response = client.Unsubscribe(
                 mom_pb2.UnsubscribeRequest(topic_name=topic_name, token=token))
-            return {"message": response.message}.json()
+            return {"message": response.message}
         except grpc.RpcError as e:
             raise HTTPException(
                 status_code=500, detail="gRPC error: " + e.details())
