@@ -10,7 +10,7 @@ from controllers.topic_controller import (
 from fastapi import HTTPException, BackgroundTasks
 
 
-class MOMService(mom_pb2_grpc.MOMServiceServicer):
+class MOMService(mom_pb2_grpc.TopicServiceServicer):
 
     def Publish(self, request, context):
         try:
