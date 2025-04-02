@@ -150,3 +150,27 @@ def delete_one_topic(topic_name: str, token: str):
         else:
             return {"message": "You cannot delete this topic"}
         return {"message": "Topic deleted"}
+
+
+def get_messages(token: str):
+    verify_token(token)
+    user = get_token_children(token)
+    topics = find_all_topics()
+    messages = []
+    for topic in topics:
+        if user in topic['subscribers'] and topic['pending_messages'][user]:
+            messages.append(
+                {"topic": topic['name'], "message": topic['pending_messages'][user]})
+            topic['pending_messages'][user] = []
+            update_topic(topic['name'], topic)
+    topics = find_all_topics()
+    for topic in topics:
+        cont = 0
+        for pending_message in topic['pending_messages'].values():
+            if len(pending_message) > 0:
+                cont += 1
+        if cont == 0:
+            topic['messages'] = []
+            update_topic(topic['name'], topic)
+
+    return {"messages": messages}
