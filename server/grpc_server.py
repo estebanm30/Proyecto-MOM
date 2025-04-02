@@ -9,12 +9,14 @@ from controllers.topic_controller import (
 )
 from fastapi import HTTPException, BackgroundTasks
 
+
 class MOMService(mom_pb2_grpc.MOMServiceServicer):
 
     def Publish(self, request, context):
         try:
             background_tasks = BackgroundTasks()
-            response = publish_message(request.topic_name, request.message, request.token, background_tasks)
+            response = publish_message(
+                request.topic_name, request.message, request.token, background_tasks)
             return mom_pb2.Response(message=response["message"])
         except HTTPException as e:
             context.set_code(grpc.StatusCode.INVALID_ARGUMENT)
@@ -32,7 +34,8 @@ class MOMService(mom_pb2_grpc.MOMServiceServicer):
 
     def Unsubscribe(self, request, context):
         try:
-            response = unsubscribe_from_topic(request.topic_name, request.token)
+            response = unsubscribe_from_topic(
+                request.topic_name, request.token)
             return mom_pb2.Response(message=response["message"])
         except HTTPException as e:
             context.set_code(grpc.StatusCode.INVALID_ARGUMENT)
@@ -48,10 +51,12 @@ class MOMService(mom_pb2_grpc.MOMServiceServicer):
             context.set_details(e.detail)
             return mom_pb2.Response(message="Error")
 
+
 def serve():
+    print("GRPC RUNNING...")
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=6))
     mom_pb2_grpc.add_MOMServiceServicer_to_server(MOMService(), server)
-    
+
     port = "50051"
     server.add_insecure_port(f"[::]:{port}")
     server.start()
@@ -63,6 +68,7 @@ def serve():
     except KeyboardInterrupt:
         print("🛑 gRPC server shutted down")
         server.stop(0)
+
 
 if __name__ == "__main__":
     serve()
