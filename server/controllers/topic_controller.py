@@ -75,7 +75,7 @@ def unsubscribe_from_topic(topic_name: str, token: str):
             client = get_grpc_client(server_redirect)
             response = client.Unsubscribe(
                 mom_pb2.UnsubscribeRequest(topic_name=topic_name, token=token))
-            return {"message": response.message}
+            return {"message": response.message}.json()
         except grpc.RpcError as e:
             raise HTTPException(
                 status_code=500, detail="gRPC error: " + e.details())
