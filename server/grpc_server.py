@@ -3,6 +3,7 @@ from concurrent import futures
 import time
 import mom_pb2
 import mom_pb2_grpc
+import threading
 
 from controllers.topic_controller import (
     publish_message, subscribe_to_topic, unsubscribe_from_topic, delete_one_topic
@@ -63,7 +64,15 @@ def serve():
 
     try:
         while True:
-            time.sleep(3600)
+            time.sleep(3600)  
     except KeyboardInterrupt:
         print("🛑 gRPC server shutted down")
         server.stop(0)
+
+
+def start_grpc_server():
+    grpc_thread = threading.Thread(target=serve, daemon=True)
+    grpc_thread.start()
+    print("✅ gRPC corriendo en un hilo separado")
+
+
