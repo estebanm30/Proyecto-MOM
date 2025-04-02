@@ -4,8 +4,7 @@ import requests
 from database import insert_topic, find_all_topics, find_topic, update_topic, delete_topic
 from models import TopicModel
 from utils import verify_token, check_redirect
-from state import active_sessions
-from zookeeper import zk, SERVER_ID, get_token_children, get_topic_server
+from zookeeper import zk, SERVER_ID, get_token_children
 
 
 def get_topics(token: str):

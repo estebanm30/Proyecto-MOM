@@ -1,5 +1,4 @@
 from fastapi import HTTPException
-from state import active_sessions
 from zookeeper import get_tokens
 from zookeeper import get_topic_server
 from database import find_topic
