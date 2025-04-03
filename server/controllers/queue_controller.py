@@ -2,7 +2,7 @@ from fastapi import HTTPException, BackgroundTasks
 import requests
 from database import insert_queue, find_queue, find_all_queues, update_queue, delete_queue
 from models import QueueModel
-from utils import check_redirect, verify_token
+from utils import check_redirect, verify_token, check_redirect_queues
 from zookeeper import zk, SERVER_ID, get_tokens, get_token_children
 import mom_pb2
 import mom_pb2_grpc
@@ -49,7 +49,7 @@ def create_queue(queue: QueueModel, token: str):
 
 def subscribe_to_queue(queue_name: str, token: str):
     verify_token(token)
-    server_redirect = check_redirect(queue_name)
+    server_redirect = check_redirect_queues(queue_name)
 
     if server_redirect is not None:
         try:
@@ -77,13 +77,13 @@ def subscribe_to_queue(queue_name: str, token: str):
 
 def send_message(queue_name: str, message: str, token: str, background_tasks: BackgroundTasks):
     verify_token(token)
-    server_redirect = check_redirect(queue_name)
+    server_redirect = check_redirect_queues(queue_name)
 
     if server_redirect is not None:
         try:
             client = get_grpc_client(server_redirect)
             response = client.SendMessage(mom_pb2.MessageRequest(
-                queue_name=queue_name, message=message, token=token , background_tasks=background_tasks))
+                queue_name=queue_name, message=message, token=token, background_tasks=background_tasks))
             return {"message": response.message}
         except grpc.RpcError as e:
             raise HTTPException(
@@ -113,7 +113,7 @@ def send_message(queue_name: str, message: str, token: str, background_tasks: Ba
 
 def receive_message(queue_name: str, token: str):
     verify_token(token)
-    server_redirect = check_redirect(queue_name)
+    server_redirect = check_redirect_queues(queue_name)
 
     if server_redirect is not None:
         try:
@@ -158,7 +158,7 @@ def receive_message(queue_name: str, token: str):
 
 def delete_one_queue(queue_name: str, token: str):
     verify_token(token)
-    server_redirect = check_redirect(queue_name)
+    server_redirect = check_redirect_queues(queue_name)
 
     if server_redirect is not None:
         try:
