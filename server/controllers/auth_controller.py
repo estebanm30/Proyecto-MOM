@@ -2,7 +2,6 @@ import secrets
 from fastapi import HTTPException
 from database import find_client
 from models import AuthModel
-from state import active_sessions
 from zookeeper import zk
 
 
