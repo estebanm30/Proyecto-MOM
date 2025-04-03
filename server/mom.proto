@@ -14,6 +14,7 @@ service QueueService {
     rpc ReceiveMessage (QueueRequest) returns (MessageResponse);
     rpc DeleteQueue (QueueRequest) returns (Response);
     rpc GetQueues (TokenRequest) returns (QueueListResponse);
+    rpc UnsubscribeQueue (QueueSubscriptionRequest) returns (Response);
 }
 
 message SubscriptionRequest {

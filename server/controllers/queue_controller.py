@@ -183,7 +183,32 @@ def delete_one_queue(queue_name: str, token: str):
         else:
             return {"message": "You cannot delete this queue"}
 
+    
+def unsubscribe_to_queue(queue_name: str, token: str):
+    verify_token(token)
+    server_redirect = check_redirect_queues(queue_name)
 
+    if server_redirect is not None:
+        try:
+            client = get_grpc_client(server_redirect)
+            response = client.UnsubscribeQueue(mom_pb2.QueueSubscriptionRequest(
+                queue_name=queue_name, token=token))
+            return {"message": response.message}
+        except grpc.RpcError as e:
+            raise HTTPException(
+                status_code=500, detail="gRPC error: " + e.details())
+    else:
+        user = get_token_children(token)
+        queue = find_queue(queue_name)
+        if not queue:
+            raise HTTPException(status_code=404, detail="Queue not found")
+        if user not in queue["subscribers"]:
+            raise HTTPException(
+                status_code=403, detail="Not subscribed to this queue")
+        queue["subscribers"].remove(user)
+        update_queue(queue_name, queue)
+        return {"message": f"{user} unsubscribed from {queue_name}"}
+    
 def get_messages_queue(token: str):
     verify_token(token)
     user = get_token_children(token)

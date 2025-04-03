@@ -8,7 +8,7 @@ import threading
 from controllers.topic_controller import (
     publish_message, subscribe_to_topic, unsubscribe_from_topic, delete_one_topic
 )
-from controllers.queue_controller import subscribe_to_queue, send_message, receive_message, delete_one_queue
+from controllers.queue_controller import subscribe_to_queue, send_message, receive_message, delete_one_queue, unsubscribe_to_queue
 from fastapi import HTTPException, BackgroundTasks
 
 
@@ -93,12 +93,22 @@ class QueueServiceHandler(mom_pb2_grpc.QueueServiceServicer):
             context.set_details(e.detail)
             return mom_pb2.Response(message="Error")
 
+    def UnsubscribeQueue(self, request, context):
+        try:
+            response = unsubscribe_to_queue(request.queue_name, request.token)
+            return mom_pb2.Response(message=response["message"])
+        except HTTPException as e:
+            context.set_code(grpc.StatusCode.INVALID_ARGUMENT)
+            context.set_details(e.detail)
+            return mom_pb2.Response(message="Error")
+
 
 def serve():
     print("GRPC RUNNING...")
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=6))
     mom_pb2_grpc.add_TopicServiceServicer_to_server(MOMService(), server)
-    mom_pb2_grpc.add_QueueServiceServicer_to_server(QueueServiceHandler(), server)
+    mom_pb2_grpc.add_QueueServiceServicer_to_server(
+        QueueServiceHandler(), server)
     port = "50051"
     server.add_insecure_port(f"[::]:{port}")
     server.start()

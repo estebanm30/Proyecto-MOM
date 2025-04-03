@@ -265,6 +265,11 @@ class QueueServiceStub(object):
                 request_serializer=mom__pb2.TokenRequest.SerializeToString,
                 response_deserializer=mom__pb2.QueueListResponse.FromString,
                 _registered_method=True)
+        self.UnsubscribeQueue = channel.unary_unary(
+                '/QueueService/UnsubscribeQueue',
+                request_serializer=mom__pb2.QueueSubscriptionRequest.SerializeToString,
+                response_deserializer=mom__pb2.Response.FromString,
+                _registered_method=True)
 
 
 class QueueServiceServicer(object):
@@ -306,6 +311,12 @@ class QueueServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def UnsubscribeQueue(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_QueueServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -338,6 +349,11 @@ def add_QueueServiceServicer_to_server(servicer, server):
                     servicer.GetQueues,
                     request_deserializer=mom__pb2.TokenRequest.FromString,
                     response_serializer=mom__pb2.QueueListResponse.SerializeToString,
+            ),
+            'UnsubscribeQueue': grpc.unary_unary_rpc_method_handler(
+                    servicer.UnsubscribeQueue,
+                    request_deserializer=mom__pb2.QueueSubscriptionRequest.FromString,
+                    response_serializer=mom__pb2.Response.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -502,6 +518,33 @@ class QueueService(object):
             '/QueueService/GetQueues',
             mom__pb2.TokenRequest.SerializeToString,
             mom__pb2.QueueListResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def UnsubscribeQueue(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/QueueService/UnsubscribeQueue',
+            mom__pb2.QueueSubscriptionRequest.SerializeToString,
+            mom__pb2.Response.FromString,
             options,
             channel_credentials,
             insecure,
