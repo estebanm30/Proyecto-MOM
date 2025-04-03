@@ -83,7 +83,7 @@ def send_message(queue_name: str, message: str, token: str, background_tasks: Ba
         try:
             client = get_grpc_client(server_redirect)
             response = client.SendMessage(mom_pb2.MessageRequest(
-                queue_name=queue_name, message=message, token=token, background_tasks=background_tasks))
+                queue_name=queue_name, message=message, token=token))
             return {"message": response.message}
         except grpc.RpcError as e:
             raise HTTPException(
