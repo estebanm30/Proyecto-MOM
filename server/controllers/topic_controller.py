@@ -1,10 +1,14 @@
 import time
+import grpc
 from fastapi import HTTPException, BackgroundTasks
-import requests
 from database import insert_topic, find_all_topics, find_topic, update_topic, delete_topic
 from models import TopicModel
 from utils import verify_token, check_redirect
-from zookeeper import zk, SERVER_ID, get_token_children
+from state import active_sessions
+from zookeeper import zk, SERVER_ID, get_token_children, get_topic_server
+import mom_pb2
+import mom_pb2_grpc
+
 
 
 def get_topics(token: str):
@@ -31,17 +35,27 @@ def create_topic(topic: TopicModel, token: str):
     return {"message": "Topic created"}
 
 
+def get_grpc_client(server_address):
+    print('------------------- Using gRPC client',
+          server_address, '---------------------')
+    newServer_address = f"{server_address[:server_address.find(':')]}:50051"
+    channel = grpc.insecure_channel(newServer_address)
+    return mom_pb2_grpc.TopicServiceStub(channel)
+
+
 def subscribe_to_topic(topic_name: str, token: str):
     verify_token(token)
     server_redirect = check_redirect(topic_name)
 
     if server_redirect is not None:
         try:
-            response = requests.put(f"http://{server_redirect}/topic/subscribe/", params={
-                                    "topic_name": topic_name, "token": token})
-            return response.json()
-        except:
-            raise HTTPException(status_code=404, detail="Server not found")
+            client = get_grpc_client(server_redirect)
+            response = client.Subscribe(mom_pb2.SubscriptionRequest(
+                topic_name=topic_name, token=token))
+            return {"message": response.message}
+        except grpc.RpcError as e:
+            raise HTTPException(
+                status_code=500, detail="gRPC error: " + e.details())
     else:
         user = get_token_children(token)
         topic = find_topic(topic_name)
@@ -61,11 +75,13 @@ def unsubscribe_from_topic(topic_name: str, token: str):
 
     if server_redirect is not None:
         try:
-            response = requests.put(f"http://{server_redirect}/topic/unsubscribe/", params={
-                                    "topic_name": topic_name, "token": token})
-            return response.json()
-        except:
-            raise HTTPException(status_code=404, detail="Server not found")
+            client = get_grpc_client(server_redirect)
+            response = client.Unsubscribe(
+                mom_pb2.SubscriptionRequest(topic_name=topic_name, token=token))
+            return {"message": response.message}
+        except grpc.RpcError as e:
+            raise HTTPException(
+                status_code=500, detail="gRPC error: " + e.details())
     else:
         user = get_token_children(token)
         topic = find_topic(topic_name)
@@ -77,16 +93,6 @@ def unsubscribe_from_topic(topic_name: str, token: str):
             topic['subscribers'].remove(user)
             topic['pending_messages'].pop(user, None)
         update_topic(topic_name, topic)
-
-        topics = find_all_topics()
-        for topic in topics:
-            cont = 0
-            for pending_message in topic['pending_messages'].values():
-                if len(pending_message) > 0:
-                    cont += 1
-            if cont == 0:
-                topic['messages'] = []
-                update_topic(topic['name'], topic)
         return {"message": f"{user} unsubscribed from {topic_name}"}
 
 
@@ -96,11 +102,13 @@ def publish_message(topic_name: str, message: str, token: str, background_tasks:
 
     if server_redirect is not None:
         try:
-            response = requests.post(f"http://{server_redirect}/topic/publish/",
-                                     params={"topic_name": topic_name, "message": message, "token": token})
-            return response.json()
-        except:
-            raise HTTPException(status_code=404, detail="Server not found")
+            client = get_grpc_client(server_redirect)
+            response = client.Publish(mom_pb2.PublishRequest(
+                topic_name=topic_name, message=message, token=token))
+            return {"message": response.message}
+        except grpc.RpcError as e:
+            raise HTTPException(
+                status_code=500, detail="gRPC error: " + e.details())
     else:
         topic = find_topic(topic_name)
         if not topic:
@@ -120,18 +128,19 @@ def delete_one_topic(topic_name: str, token: str):
 
     if server_redirect is not None:
         try:
-            response = requests.delete(
-                f"http://{server_redirect}/topic/", params={"topic_name": topic_name, "token": token})
-            return response.json()
-        except:
-            raise HTTPException(status_code=404, detail="Server not found")
+            client = get_grpc_client(server_redirect)
+            response = client.DeleteTopic(
+                mom_pb2.DeleteRequest(topic_name=topic_name, token=token))
+            return {"message": response.message}
+        except grpc.RpcError as e:
+            raise HTTPException(
+                status_code=500, detail="gRPC error: " + e.details())
     else:
         client = get_token_children(token)
         topic = find_topic(topic_name)
         if not topic:
             raise HTTPException(status_code=404, detail="Topic not found")
         if topic["owner"] == client:
-
             message = f"The topic {topic_name} has been eliminated by the owner"
             topic['messages'].append(message)
             for subscriber in topic['subscribers']:

@@ -24,21 +24,21 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\tmom.proto\":\n\x12UpdateQueueRequest\x12\x12\n\nqueue_name\x18\x01 \x01(\t\x12\x10\n\x08messages\x18\x02 \x03(\t\"&\n\x13UpdateQueueResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\":\n\x12UpdateTopicRequest\x12\x12\n\ntopic_name\x18\x01 \x01(\t\x12\x10\n\x08messages\x18\x02 \x03(\t\"&\n\x13UpdateTopicResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x32\x80\x01\n\nMOMService\x12\x38\n\x0bUpdateQueue\x12\x13.UpdateQueueRequest\x1a\x14.UpdateQueueResponse\x12\x38\n\x0bUpdateTopic\x12\x13.UpdateTopicRequest\x1a\x14.UpdateTopicResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\tmom.proto\"8\n\x13SubscriptionRequest\x12\x12\n\ntopic_name\x18\x01 \x01(\t\x12\r\n\x05token\x18\x02 \x01(\t\"D\n\x0ePublishRequest\x12\x12\n\ntopic_name\x18\x01 \x01(\t\x12\x0f\n\x07message\x18\x02 \x01(\t\x12\r\n\x05token\x18\x03 \x01(\t\"2\n\rDeleteRequest\x12\x12\n\ntopic_name\x18\x01 \x01(\t\x12\r\n\x05token\x18\x02 \x01(\t\"\x1b\n\x08Response\x12\x0f\n\x07message\x18\x01 \x01(\t2\xbd\x01\n\x0cTopicService\x12,\n\tSubscribe\x12\x14.SubscriptionRequest\x1a\t.Response\x12.\n\x0bUnsubscribe\x12\x14.SubscriptionRequest\x1a\t.Response\x12%\n\x07Publish\x12\x0f.PublishRequest\x1a\t.Response\x12(\n\x0b\x44\x65leteTopic\x12\x0e.DeleteRequest\x1a\t.Responseb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'mom_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
-  _globals['_UPDATEQUEUEREQUEST']._serialized_start=13
-  _globals['_UPDATEQUEUEREQUEST']._serialized_end=71
-  _globals['_UPDATEQUEUERESPONSE']._serialized_start=73
-  _globals['_UPDATEQUEUERESPONSE']._serialized_end=111
-  _globals['_UPDATETOPICREQUEST']._serialized_start=113
-  _globals['_UPDATETOPICREQUEST']._serialized_end=171
-  _globals['_UPDATETOPICRESPONSE']._serialized_start=173
-  _globals['_UPDATETOPICRESPONSE']._serialized_end=211
-  _globals['_MOMSERVICE']._serialized_start=214
-  _globals['_MOMSERVICE']._serialized_end=342
+  _globals['_SUBSCRIPTIONREQUEST']._serialized_start=13
+  _globals['_SUBSCRIPTIONREQUEST']._serialized_end=69
+  _globals['_PUBLISHREQUEST']._serialized_start=71
+  _globals['_PUBLISHREQUEST']._serialized_end=139
+  _globals['_DELETEREQUEST']._serialized_start=141
+  _globals['_DELETEREQUEST']._serialized_end=191
+  _globals['_RESPONSE']._serialized_start=193
+  _globals['_RESPONSE']._serialized_end=220
+  _globals['_TOPICSERVICE']._serialized_start=223
+  _globals['_TOPICSERVICE']._serialized_end=412
 # @@protoc_insertion_point(module_scope)
