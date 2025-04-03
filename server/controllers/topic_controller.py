@@ -129,7 +129,7 @@ def delete_one_topic(topic_name: str, token: str):
         try:
             client = get_grpc_client(server_redirect)
             response = client.DeleteTopic(
-                mom_pb2.DeleteTopicRequest(topic_name=topic_name, token=token))
+                mom_pb2.DeleteRequest(topic_name=topic_name, token=token))
             return {"message": response.message}
         except grpc.RpcError as e:
             raise HTTPException(
