@@ -5,12 +5,11 @@ from dotenv import load_dotenv
 import sys
 load_dotenv()
 ZOOKEEPER_ADDRESS = os.getenv("ZOOKEEPER_ADDRESS")
-
+SERVER_ID = os.getenv("SERVER_ID")
 zk = KazooClient(hosts=ZOOKEEPER_ADDRESS)
-zk.start()
+zk.start()  
 
 port = int(sys.argv[1]) if len(sys.argv) > 1 else 8000
-SERVER_ID = f"{socket.gethostbyname(socket.gethostname())}:{port}"
 SERVER_PATH = f"/servers/{SERVER_ID}"
 
 zk.ensure_path("/servers")
