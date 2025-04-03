@@ -3,24 +3,60 @@ from concurrent import futures
 import time
 import mom_pb2
 import mom_pb2_grpc
+import threading
 
-class MOMService(mom_pb2_grpc.MOMServiceServicer):
-    def UpdateQueue(self, request, context):
+from controllers.topic_controller import (
+    publish_message, subscribe_to_topic, unsubscribe_from_topic, delete_one_topic
+)
+from fastapi import HTTPException, BackgroundTasks
 
-        print(f"🔄 Updating Queues: {request.queue_name}")
-        print(f"Updated Messages: {request.messages}")
-        return mom_pb2.UpdateQueueResponse(success=True)
 
-    def UpdateTopic(self, request, context):
+class MOMService(mom_pb2_grpc.TopicServiceServicer):
 
-        print(f"🔄 Updating Topic: {request.topic_name}")
-        print(f"Topic Changes: {request.messages}")
-        return mom_pb2.UpdateTopicResponse(success=True)
+    def Publish(self, request, context):
+        try:
+            background_tasks = BackgroundTasks()
+            response = publish_message(
+                request.topic_name, request.message, request.token, background_tasks)
+            return mom_pb2.Response(message=response["message"])
+        except HTTPException as e:
+            context.set_code(grpc.StatusCode.INVALID_ARGUMENT)
+            context.set_details(e.detail)
+            return mom_pb2.Response(message="Error")
+
+    def Subscribe(self, request, context):
+        try:
+            response = subscribe_to_topic(request.topic_name, request.token)
+            return mom_pb2.Response(message=response["message"])
+        except HTTPException as e:
+            context.set_code(grpc.StatusCode.INVALID_ARGUMENT)
+            context.set_details(e.detail)
+            return mom_pb2.Response(message="Error")
+
+    def Unsubscribe(self, request, context):
+        try:
+            response = unsubscribe_from_topic(
+                request.topic_name, request.token)
+            return mom_pb2.Response(message=response["message"])
+        except HTTPException as e:
+            context.set_code(grpc.StatusCode.INVALID_ARGUMENT)
+            context.set_details(e.detail)
+            return mom_pb2.Response(message="Error")
+
+    def DeleteTopic(self, request, context):
+        try:
+            response = delete_one_topic(request.topic_name, request.token)
+            return mom_pb2.Response(message=response["message"])
+        except HTTPException as e:
+            context.set_code(grpc.StatusCode.INVALID_ARGUMENT)
+            context.set_details(e.detail)
+            return mom_pb2.Response(message="Error")
+
 
 def serve():
+    print("GRPC RUNNING...")
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=6))
-    mom_pb2_grpc.add_MOMServiceServicer_to_server(MOMService(), server)
-    
+    mom_pb2_grpc.add_TopicServiceServicer_to_server(MOMService(), server)
     port = "50051"
     server.add_insecure_port(f"[::]:{port}")
     server.start()
@@ -28,10 +64,14 @@ def serve():
 
     try:
         while True:
-            time.sleep(3600)
+            time.sleep(3600)  
     except KeyboardInterrupt:
         print("🛑 gRPC server shutted down")
         server.stop(0)
 
-if __name__ == "__main__":
-    serve()
+
+def start_grpc_server():
+    grpc_thread = threading.Thread(target=serve, daemon=True)
+    grpc_thread.start()
+
+
