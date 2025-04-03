@@ -54,7 +54,7 @@ def subscribe_to_queue(queue_name: str, token: str):
     if server_redirect is not None:
         try:
             client = get_grpc_client(server_redirect)
-            response = client.SubscribeQueue(mom_pb2.SubscriptionRequest(
+            response = client.SubscribeQueue(mom_pb2.QueueSubscriptionRequest(
                 queue_name=queue_name, token=token))
             return {"message": response.message}
         except grpc.RpcError as e:
