@@ -56,7 +56,7 @@ class MOMService(mom_pb2_grpc.TopicServiceServicer):
 
 class QueueServiceHandler(mom_pb2_grpc.QueueServiceServicer):
 
-    def SubscribeToQueue(self, request, context):
+    def SubscribeQueue(self, request, context):
         try:
             response = subscribe_to_queue(request.queue_name, request.token)
             return mom_pb2.Response(message=response["message"])
