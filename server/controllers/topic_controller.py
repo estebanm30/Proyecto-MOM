@@ -35,6 +35,7 @@ def create_topic(topic: TopicModel, token: str):
 
 
 def get_grpc_client(server_address):
+    print('Using gRPC client', server_address)
     newServer_address = f"{server_address[:server_address.find(':')]}:50051"
     channel = grpc.insecure_channel(newServer_address)
     return mom_pb2_grpc.TopicServiceStub(channel)
@@ -74,7 +75,7 @@ def unsubscribe_from_topic(topic_name: str, token: str):
         try:
             client = get_grpc_client(server_redirect)
             response = client.Unsubscribe(
-                mom_pb2.UnsubscribeRequest(topic_name=topic_name, token=token))
+                mom_pb2.UnsubscriptionRequest(topic_name=topic_name, token=token))
             return {"message": response.message}
         except grpc.RpcError as e:
             raise HTTPException(
