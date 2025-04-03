@@ -46,7 +46,6 @@ def listen_for_messages(token):
             time.sleep(2)
 
 
-
 token = None
 try:
     print("--------- CONNECT TO A SERVER ---------")
@@ -63,7 +62,7 @@ try:
             print(colored("❌ No servers available!", "red"))
             continue
         response = requests.post(f"http://{server}/connect/",
-                                json={"user": user, "password": password})
+                                 json={"user": user, "password": password})
 
         if response.status_code == 200:
             connection = response.json()
@@ -95,17 +94,19 @@ try:
                         print("3. Receive message")
                         print("4. Delete queue")
                         print("5. Suscribe to queue")
-                        print("6. Go back")
+                        print("6. Unsuscribe to queue")
+                        print("7. Go back")
                         print("-------------------------")
                         option = input("Select 1 option: ")
 
                         if option == "1":
-                            queue_name = input("Enter the queue name to create: ")
+                            queue_name = input(
+                                "Enter the queue name to create: ")
                             server_address = get_random_server()
                             if not server_address:
                                 continue
                             response = requests.post(f"http://{server_address}/queue/create/", json={"name": queue_name}, params={"token": token}
-                            )
+                                                     )
                             print("\033c", end="")
                             print(server_address, "server selected")
                             print(colored(response.json(), "yellow"))
@@ -117,13 +118,14 @@ try:
                                 continue
                             message = input("Enter the message: ")
                             response = requests.post(f"http://{server_address}/queue/send/",
-                                                    params={"queue_name": queue_name, "message": message, "token": token})
+                                                     params={"queue_name": queue_name, "message": message, "token": token})
                             print("\033c", end="")
                             print(server_address, "server selected")
                             print(colored(response.json(), "yellow"))
 
                         elif option == "3":
-                            queue_name = input("Ingrese el nombre de la cola: ")
+                            queue_name = input(
+                                "Ingrese el nombre de la cola: ")
                             server_address = get_random_server()
                             if check_servers(server_address):
                                 continue
@@ -134,17 +136,19 @@ try:
                             print(colored(response.json(), "green"))
 
                         elif option == "4":
-                            queue_name = input("Ingrese el nombre de la cola: ")
+                            queue_name = input(
+                                "Ingrese el nombre de la cola: ")
                             server_address = get_random_server()
                             if check_servers(server_address):
                                 continue
                             response = requests.delete(f"http://{server_address}/queue/",
-                                                    params={"queue_name": queue_name, "token": token})
+                                                       params={"queue_name": queue_name, "token": token})
                             print("\033c", end="")
                             print(colored(response.json(), "yellow"))
 
                         elif option == "5":
-                            queue_name = input("Ingrese el nombre de la cola: ")
+                            queue_name = input(
+                                "Ingrese el nombre de la cola: ")
                             server_address = get_random_server()
                             if check_servers(server_address):
                                 continue
@@ -154,11 +158,23 @@ try:
                             print(colored(response.json(), "yellow"))
 
                         elif option == "6":
+                            queue_name = input(
+                                "Ingrese el nombre de la cola: ")
+                            server_address = get_random_server()
+                            if check_servers(server_address):
+                                continue
+                            response = requests.put(f"http://{server_address}/queue/unsubscribe/",
+                                                    params={"queue_name": queue_name, "token": token})
+                            print("\033c", end="")
+                            print(colored(response.json(), "yellow"))
+
+                        elif option == "7":
                             print("\033c", end="")
                             break
 
                 elif option == "2":
-                    listener_thread = threading.Thread(target=listen_for_messages, args=(token,), daemon=True)
+                    listener_thread = threading.Thread(
+                        target=listen_for_messages, args=(token,), daemon=True)
                     listener_thread.start()
 
                     while True:
@@ -178,7 +194,8 @@ try:
                         option = input("Select 1 option: ")
 
                         if option == "1":
-                            topic_name = input("Enter the topic name to create: ")
+                            topic_name = input(
+                                "Enter the topic name to create: ")
                             server_address = get_random_server()
                             if check_servers(server_address):
                                 continue
@@ -199,8 +216,7 @@ try:
                                 continue
                             response = requests.put(f"http://{server_address}/topic/subscribe/",
                                                     params={"topic_name": topic_name, "token": token})
-                            
-                                
+
                             print("\033c", end="")
                             print(colored(response.json(), "yellow"))
 
@@ -211,7 +227,7 @@ try:
                                 continue
                             message = input("Enter the message: ")
                             response = requests.post(f"http://{server_address}/topic/publish/",
-                                                    params={"topic_name": topic_name, "message": message, "token": token})
+                                                     params={"topic_name": topic_name, "message": message, "token": token})
 
                             print("\033c", end="")
                             print(colored(response.json(), "yellow"))
@@ -223,7 +239,7 @@ try:
                                 continue
                             response = requests.put(f"http://{server_address}/topic/unsubscribe/",
                                                     params={"topic_name": topic_name, "token": token})
-                                   
+
                             print("\033c", end="")
                             print(colored(response.json(), "yellow"))
 
@@ -232,8 +248,9 @@ try:
                             server_address = get_random_server()
                             if check_servers(server_address):
                                 continue
-                            response = requests.delete(f"http://{server_address}/topic/",params={"topic_name": topic_name, "token": token})
-                            
+                            response = requests.delete(
+                                f"http://{server_address}/topic/", params={"topic_name": topic_name, "token": token})
+
                             print("\033c", end="")
                             print(colored(response.json(), "yellow"))
 
