@@ -30,8 +30,8 @@ def subscribet(queue_name: str, token: str):
 
 
 @router.post("/queue/send/")
-def sendq(queue_name: str, message: str, token: str, background_tasks: BackgroundTasks):
-    return send_message(queue_name, message, token, background_tasks)
+def sendq(queue_name: str, message: str, token: str):
+    return send_message(queue_name, message, token)
 
 
 @router.get("/queue/receive/")
