@@ -10,6 +10,7 @@ import mom_pb2
 import mom_pb2_grpc
 
 
+
 def get_topics(token: str):
     verify_token(token)
     topics = find_all_topics()

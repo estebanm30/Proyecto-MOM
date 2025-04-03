@@ -104,10 +104,7 @@ try:
                             server_address = get_random_server()
                             if not server_address:
                                 continue
-                            response = requests.post(
-                                f"http://{server_address}/queue/create/",
-                                json={"name": queue_name},
-                                params={"token": token}
+                            response = requests.post(f"http://{server_address}/queue/create/", json={"name": queue_name}, params={"token": token}
                             )
                             print("\033c", end="")
                             print(server_address, "server selected")

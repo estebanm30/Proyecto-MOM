@@ -1,8 +1,8 @@
 from fastapi import HTTPException, BackgroundTasks
+import requests
 from database import insert_queue, find_queue, find_all_queues, update_queue, delete_queue
 from models import QueueModel
-from utils import verify_token
-from state import active_sessions
+from utils import check_redirect, verify_token
 from zookeeper import zk, SERVER_ID, get_tokens, get_token_children
 
 
@@ -37,87 +37,127 @@ def create_queue(queue: QueueModel, token: str):
 
 def subscribe_to_queue(queue_name: str, token: str):
     verify_token(token)
-    user = get_token_children(token)
-    queue = find_queue(queue_name)
-    if not queue:
-        raise HTTPException(status_code=404, detail="Queue not found")
-    if user in queue["subscribers"]:
-        raise HTTPException(status_code=400, detail="Already subscribed")
-    else: 
-        queue["subscribers"].append(user)
-        queue["pending_messages"][user] = []
+    server_redirect = check_redirect(queue_name)
 
-    update_queue(queue_name, queue)
-    return {"message": f"{user} subscribed to {queue_name}"}
+    if server_redirect is not None:
+        try:
+            response = requests.put(f"http://{server_redirect}/queue/subscribe/",
+                                                    params={"queue_name": queue_name, "token": token})
+            return response.json()
+        except:
+            raise HTTPException(status_code=404, detail="Server not found")
+    else:
+        user = get_token_children(token)
+        queue = find_queue(queue_name)
+        if not queue:
+            raise HTTPException(status_code=404, detail="Queue not found")
+        if user in queue["subscribers"]:
+            raise HTTPException(status_code=400, detail="Already subscribed")
+        else: 
+            queue["subscribers"].append(user)
+            queue["pending_messages"][user] = []
+
+        update_queue(queue_name, queue)
+        return {"message": f"{user} subscribed to {queue_name}"}
 
 
 def send_message(queue_name: str, message: str, token: str, background_tasks: BackgroundTasks):
     verify_token(token)
-    queue = find_queue(queue_name)
-    if not queue:
-        raise HTTPException(status_code=404, detail="Queue not found")
+    server_redirect = check_redirect(queue_name)
 
-    if not queue["subscribers"]:
-        queue["messages"].append(message)
+    if server_redirect is not None:
+        try:
+            response = requests.post(f"http://{server_redirect}/queue/send/",
+                                                    params={"queue_name": queue_name, "message": message, "token": token})
+            return response.json()
+        except:
+            raise HTTPException(status_code=404, detail="Server not found")
     else:
-        if "current_subscriber_idx" not in queue:
-            queue["current_subscriber_idx"] = 0
-        
-        subscriber_idx = queue["current_subscriber_idx"]
-        subscriber = queue["subscribers"][subscriber_idx]
-        
-        queue["pending_messages"][subscriber].append(message)
-        
-        queue["current_subscriber_idx"] = (subscriber_idx + 1) % len(queue["subscribers"])
+        queue = find_queue(queue_name)
+        if not queue:
+            raise HTTPException(status_code=404, detail="Queue not found")
 
-    update_queue(queue_name, queue)
-    return {"message": "Message sent"}
+        if not queue["subscribers"]:
+            queue["messages"].append(message)
+        else:
+            if "current_subscriber_idx" not in queue:
+                queue["current_subscriber_idx"] = 0
+            
+            subscriber_idx = queue["current_subscriber_idx"]
+            subscriber = queue["subscribers"][subscriber_idx]
+            
+            queue["pending_messages"][subscriber].append(message)
+            
+            queue["current_subscriber_idx"] = (subscriber_idx + 1) % len(queue["subscribers"])
+
+        update_queue(queue_name, queue)
+        return {"message": "Message sent"}
 
 
 def receive_message(queue_name: str, token: str):
     verify_token(token)
-    user = get_token_children(token)
-    queue = find_queue(queue_name)
-    
-    if not queue:
-        raise HTTPException(status_code=404, detail="Queue not found")
-    
-    if user not in queue["subscribers"]:
-        raise HTTPException(status_code=403, detail="Not subscribed to this queue")
-    
-    if not queue["pending_messages"][user]:
-        raise HTTPException(status_code=404, detail="No pending messages")
-    
-    current_idx = queue.get("current_subscriber_idx", 0)
-    next_subscriber = queue["subscribers"][current_idx]
-    
-    if user != next_subscriber:
-        raise HTTPException(
-            status_code=403,
-            detail="Not your turn (Round Robin in progress)"
-        )
-    
-    msg = queue["pending_messages"][user].pop(0)
-    
-    queue["current_subscriber_idx"] = (current_idx + 1) % len(queue["subscribers"])
-    update_queue(queue_name, queue)
-    
-    return {"message": msg}
+    server_redirect = check_redirect(queue_name)
+
+    if server_redirect is not None:
+        try:
+            response = requests.get(f"http://{server_redirect}/queue/receive/",
+                                                    params={"queue_name": queue_name, "token": token})
+            return response.json()
+        except:
+            raise HTTPException(status_code=404, detail="Server not found")
+    else:
+        user = get_token_children(token)
+        queue = find_queue(queue_name)
+        
+        if not queue:
+            raise HTTPException(status_code=404, detail="Queue not found")
+        
+        if user not in queue["subscribers"]:
+            raise HTTPException(status_code=403, detail="Not subscribed to this queue")
+        
+        if not queue["pending_messages"][user]:
+            raise HTTPException(status_code=404, detail="No pending messages")
+        
+        current_idx = queue.get("current_subscriber_idx", 0)
+        next_subscriber = queue["subscribers"][current_idx]
+        
+        if user != next_subscriber:
+            raise HTTPException(
+                status_code=403,
+                detail="Not your turn (Round Robin in progress)"
+            )
+        
+        msg = queue["pending_messages"][user].pop(0)
+        
+        queue["current_subscriber_idx"] = (current_idx + 1) % len(queue["subscribers"])
+        update_queue(queue_name, queue)
+        
+        return {"message": msg}
 
 def delete_one_queue(queue_name: str, token: str):
     verify_token(token)
-    client = get_token_children(token)
-    queue = find_queue(queue_name)
-    if not queue:
-        raise HTTPException(status_code=404, detail="Queue not found")
-    if queue["owner"] == client:
-        delete_queue(queue_name)
-        path = f"/mom_queues/{queue_name}"
-        if zk.exists(path):
-            zk.delete(path)
-        return {"message": "Queue deleted"}
+    server_redirect = check_redirect(queue_name)
+
+    if server_redirect is not None:
+        try:
+            response = requests.delete(f"http://{server_redirect}/queue/",
+                                                    params={"queue_name": queue_name, "token": token})
+            return response.json()
+        except:
+            raise HTTPException(status_code=404, detail="Server not found")
     else:
-        return {"message": "You cannot delete this queue"}
+        client = get_token_children(token)
+        queue = find_queue(queue_name)
+        if not queue:
+            raise HTTPException(status_code=404, detail="Queue not found")
+        if queue["owner"] == client:
+            delete_queue(queue_name)
+            path = f"/mom_queues/{queue_name}"
+            if zk.exists(path):
+                zk.delete(path)
+            return {"message": "Queue deleted"}
+        else:
+            return {"message": "You cannot delete this queue"}
 
 
 def get_messages_queue(token: str):
