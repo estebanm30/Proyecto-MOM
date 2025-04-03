@@ -31,6 +31,12 @@ def get_topic_server(topic_name: str):
         return zk.get(path)[0].decode() 
     return None
 
+def get_queue_server(queue_name: str):
+    path = f"/mom_queues/{queue_name}"
+    if zk.exists(path):
+        return zk.get(path)[0].decode() 
+    return None
+
 def get_token_children(token):
     token_path = f"/tokens/{token}"
     if zk.exists(token_path):

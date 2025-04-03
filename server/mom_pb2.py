@@ -24,21 +24,35 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\tmom.proto\":\n\x12UpdateQueueRequest\x12\x12\n\nqueue_name\x18\x01 \x01(\t\x12\x10\n\x08messages\x18\x02 \x03(\t\"&\n\x13UpdateQueueResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\":\n\x12UpdateTopicRequest\x12\x12\n\ntopic_name\x18\x01 \x01(\t\x12\x10\n\x08messages\x18\x02 \x03(\t\"&\n\x13UpdateTopicResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x32\x80\x01\n\nMOMService\x12\x38\n\x0bUpdateQueue\x12\x13.UpdateQueueRequest\x1a\x14.UpdateQueueResponse\x12\x38\n\x0bUpdateTopic\x12\x13.UpdateTopicRequest\x1a\x14.UpdateTopicResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\tmom.proto\"8\n\x13SubscriptionRequest\x12\x12\n\ntopic_name\x18\x01 \x01(\t\x12\r\n\x05token\x18\x02 \x01(\t\"D\n\x0ePublishRequest\x12\x12\n\ntopic_name\x18\x01 \x01(\t\x12\x0f\n\x07message\x18\x02 \x01(\t\x12\r\n\x05token\x18\x03 \x01(\t\"2\n\rDeleteRequest\x12\x12\n\ntopic_name\x18\x01 \x01(\t\x12\r\n\x05token\x18\x02 \x01(\t\"\x1b\n\x08Response\x12\x0f\n\x07message\x18\x01 \x01(\t\"1\n\x0cQueueRequest\x12\x12\n\nqueue_name\x18\x01 \x01(\t\x12\r\n\x05token\x18\x02 \x01(\t\"D\n\x0eMessageRequest\x12\x12\n\nqueue_name\x18\x01 \x01(\t\x12\x0f\n\x07message\x18\x02 \x01(\t\x12\r\n\x05token\x18\x03 \x01(\t\"\"\n\x0fMessageResponse\x12\x0f\n\x07message\x18\x01 \x01(\t\"\x1d\n\x0cTokenRequest\x12\r\n\x05token\x18\x01 \x01(\t\"(\n\x11QueueListResponse\x12\x13\n\x0bqueue_names\x18\x01 \x03(\t\"=\n\x18QueueSubscriptionRequest\x12\x12\n\nqueue_name\x18\x01 \x01(\t\x12\r\n\x05token\x18\x02 \x01(\t2\xbd\x01\n\x0cTopicService\x12,\n\tSubscribe\x12\x14.SubscriptionRequest\x1a\t.Response\x12.\n\x0bUnsubscribe\x12\x14.SubscriptionRequest\x1a\t.Response\x12%\n\x07Publish\x12\x0f.PublishRequest\x1a\t.Response\x12(\n\x0b\x44\x65leteTopic\x12\x0e.DeleteRequest\x1a\t.Response2\xe0\x02\n\x0cQueueService\x12\'\n\x0b\x43reateQueue\x12\r.QueueRequest\x1a\t.Response\x12\x36\n\x0eSubscribeQueue\x12\x19.QueueSubscriptionRequest\x1a\t.Response\x12)\n\x0bSendMessage\x12\x0f.MessageRequest\x1a\t.Response\x12\x31\n\x0eReceiveMessage\x12\r.QueueRequest\x1a\x10.MessageResponse\x12\'\n\x0b\x44\x65leteQueue\x12\r.QueueRequest\x1a\t.Response\x12.\n\tGetQueues\x12\r.TokenRequest\x1a\x12.QueueListResponse\x12\x38\n\x10UnsubscribeQueue\x12\x19.QueueSubscriptionRequest\x1a\t.Responseb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'mom_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
-  _globals['_UPDATEQUEUEREQUEST']._serialized_start=13
-  _globals['_UPDATEQUEUEREQUEST']._serialized_end=71
-  _globals['_UPDATEQUEUERESPONSE']._serialized_start=73
-  _globals['_UPDATEQUEUERESPONSE']._serialized_end=111
-  _globals['_UPDATETOPICREQUEST']._serialized_start=113
-  _globals['_UPDATETOPICREQUEST']._serialized_end=171
-  _globals['_UPDATETOPICRESPONSE']._serialized_start=173
-  _globals['_UPDATETOPICRESPONSE']._serialized_end=211
-  _globals['_MOMSERVICE']._serialized_start=214
-  _globals['_MOMSERVICE']._serialized_end=342
+  _globals['_SUBSCRIPTIONREQUEST']._serialized_start=13
+  _globals['_SUBSCRIPTIONREQUEST']._serialized_end=69
+  _globals['_PUBLISHREQUEST']._serialized_start=71
+  _globals['_PUBLISHREQUEST']._serialized_end=139
+  _globals['_DELETEREQUEST']._serialized_start=141
+  _globals['_DELETEREQUEST']._serialized_end=191
+  _globals['_RESPONSE']._serialized_start=193
+  _globals['_RESPONSE']._serialized_end=220
+  _globals['_QUEUEREQUEST']._serialized_start=222
+  _globals['_QUEUEREQUEST']._serialized_end=271
+  _globals['_MESSAGEREQUEST']._serialized_start=273
+  _globals['_MESSAGEREQUEST']._serialized_end=341
+  _globals['_MESSAGERESPONSE']._serialized_start=343
+  _globals['_MESSAGERESPONSE']._serialized_end=377
+  _globals['_TOKENREQUEST']._serialized_start=379
+  _globals['_TOKENREQUEST']._serialized_end=408
+  _globals['_QUEUELISTRESPONSE']._serialized_start=410
+  _globals['_QUEUELISTRESPONSE']._serialized_end=450
+  _globals['_QUEUESUBSCRIPTIONREQUEST']._serialized_start=452
+  _globals['_QUEUESUBSCRIPTIONREQUEST']._serialized_end=513
+  _globals['_TOPICSERVICE']._serialized_start=516
+  _globals['_TOPICSERVICE']._serialized_end=705
+  _globals['_QUEUESERVICE']._serialized_start=708
+  _globals['_QUEUESERVICE']._serialized_end=1060
 # @@protoc_insertion_point(module_scope)

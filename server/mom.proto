@@ -1,24 +1,66 @@
 syntax = "proto3";
 
-service MOMService {
-    rpc UpdateQueue(UpdateQueueRequest) returns (UpdateQueueResponse);
-    rpc UpdateTopic(UpdateTopicRequest) returns (UpdateTopicResponse);
+service TopicService {
+    rpc Subscribe (SubscriptionRequest) returns (Response);
+    rpc Unsubscribe (SubscriptionRequest) returns (Response);
+    rpc Publish (PublishRequest) returns (Response);
+    rpc DeleteTopic (DeleteRequest) returns (Response);
 }
 
-message UpdateQueueRequest {
-    string queue_name = 1;
-    repeated string messages = 2;
+service QueueService {
+    rpc CreateQueue (QueueRequest) returns (Response);
+    rpc SubscribeQueue (QueueSubscriptionRequest) returns (Response);
+    rpc SendMessage (MessageRequest) returns (Response);
+    rpc ReceiveMessage (QueueRequest) returns (MessageResponse);
+    rpc DeleteQueue (QueueRequest) returns (Response);
+    rpc GetQueues (TokenRequest) returns (QueueListResponse);
+    rpc UnsubscribeQueue (QueueSubscriptionRequest) returns (Response);
 }
 
-message UpdateQueueResponse {
-    bool success = 1;
-}
-
-message UpdateTopicRequest {
+message SubscriptionRequest {
     string topic_name = 1;
-    repeated string messages = 2;
+    string token = 2;
 }
 
-message UpdateTopicResponse {
-    bool success = 1;
+message PublishRequest {
+    string topic_name = 1;
+    string message = 2;
+    string token = 3;
+}
+
+message DeleteRequest {
+    string topic_name = 1;
+    string token = 2;
+}
+
+message Response {
+    string message = 1;
+}
+
+message QueueRequest {
+    string queue_name = 1;
+    string token = 2;
+}
+
+message MessageRequest {
+    string queue_name = 1;
+    string message = 2;
+    string token = 3;
+}
+
+message MessageResponse {
+    string message = 1;
+}
+
+message TokenRequest {
+    string token = 1;
+}
+
+message QueueListResponse {
+    repeated string queue_names = 1;
+}
+
+message QueueSubscriptionRequest {
+    string queue_name = 1;
+    string token = 2;
 }
