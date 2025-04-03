@@ -112,7 +112,7 @@ try:
 
                         elif option == "2":
                             queue_name = input("Enter the queue name: ")
-                            server_address = get_queue_server(queue_name)
+                            server_address = get_random_server()
                             if check_servers(server_address):
                                 continue
                             message = input("Enter the message: ")
@@ -124,7 +124,7 @@ try:
 
                         elif option == "3":
                             queue_name = input("Ingrese el nombre de la cola: ")
-                            server_address = get_queue_server(queue_name)
+                            server_address = get_random_server()
                             if check_servers(server_address):
                                 continue
                             response = requests.get(f"http://{server_address}/queue/receive/",
@@ -135,7 +135,7 @@ try:
 
                         elif option == "4":
                             queue_name = input("Ingrese el nombre de la cola: ")
-                            server_address = get_queue_server(queue_name)
+                            server_address = get_random_server()
                             if check_servers(server_address):
                                 continue
                             response = requests.delete(f"http://{server_address}/queue/",
@@ -145,7 +145,7 @@ try:
 
                         elif option == "5":
                             queue_name = input("Ingrese el nombre de la cola: ")
-                            server_address = get_queue_server(queue_name)
+                            server_address = get_random_server()
                             if check_servers(server_address):
                                 continue
                             response = requests.put(f"http://{server_address}/queue/subscribe/",
