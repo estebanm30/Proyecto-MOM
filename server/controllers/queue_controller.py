@@ -1,8 +1,8 @@
-from fastapi import HTTPException, BackgroundTasks
+from fastapi import HTTPException
 import requests
 from database import insert_queue, find_queue, find_all_queues, update_queue, delete_queue
 from models import QueueModel
-from utils import check_redirect, verify_token, check_redirect_queues
+from utils import verify_token, check_redirect_queues
 from zookeeper import zk, SERVER_ID, get_tokens, get_token_children
 import mom_pb2
 import mom_pb2_grpc
@@ -75,7 +75,7 @@ def subscribe_to_queue(queue_name: str, token: str):
         return {"message": f"{user} subscribed to {queue_name}"}
 
 
-def send_message(queue_name: str, message: str, token: str, background_tasks: BackgroundTasks):
+def send_message(queue_name: str, message: str, token: str):
     verify_token(token)
     server_redirect = check_redirect_queues(queue_name)
 
