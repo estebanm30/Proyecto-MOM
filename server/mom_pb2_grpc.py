@@ -242,7 +242,7 @@ class QueueServiceStub(object):
                 _registered_method=True)
         self.SubscribeQueue = channel.unary_unary(
                 '/QueueService/SubscribeQueue',
-                request_serializer=mom__pb2.SubscriptionRequest.SerializeToString,
+                request_serializer=mom__pb2.QueueSubscriptionRequest.SerializeToString,
                 response_deserializer=mom__pb2.Response.FromString,
                 _registered_method=True)
         self.SendMessage = channel.unary_unary(
@@ -316,7 +316,7 @@ def add_QueueServiceServicer_to_server(servicer, server):
             ),
             'SubscribeQueue': grpc.unary_unary_rpc_method_handler(
                     servicer.SubscribeQueue,
-                    request_deserializer=mom__pb2.SubscriptionRequest.FromString,
+                    request_deserializer=mom__pb2.QueueSubscriptionRequest.FromString,
                     response_serializer=mom__pb2.Response.SerializeToString,
             ),
             'SendMessage': grpc.unary_unary_rpc_method_handler(
@@ -392,7 +392,7 @@ class QueueService(object):
             request,
             target,
             '/QueueService/SubscribeQueue',
-            mom__pb2.SubscriptionRequest.SerializeToString,
+            mom__pb2.QueueSubscriptionRequest.SerializeToString,
             mom__pb2.Response.FromString,
             options,
             channel_credentials,

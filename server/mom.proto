@@ -9,7 +9,7 @@ service TopicService {
 
 service QueueService {
     rpc CreateQueue (QueueRequest) returns (Response);
-    rpc SubscribeQueue (SubscriptionRequest) returns (Response);
+    rpc SubscribeQueue (QueueSubscriptionRequest) returns (Response);
     rpc SendMessage (MessageRequest) returns (Response);
     rpc ReceiveMessage (QueueRequest) returns (MessageResponse);
     rpc DeleteQueue (QueueRequest) returns (Response);
@@ -57,4 +57,9 @@ message TokenRequest {
 
 message QueueListResponse {
     repeated string queue_names = 1;
+}
+
+message QueueSubscriptionRequest {
+    string queue_name = 1;
+    string token = 2;
 }

@@ -55,7 +55,7 @@ def subscribe_to_queue(queue_name: str, token: str):
         try:
             client = get_grpc_client(server_redirect)
             response = client.SubscribeQueue(mom_pb2.SubscriptionRequest(
-                topic_name=queue_name, token=token))
+                queue_name=queue_name, token=token))
             return {"message": response.message}
         except grpc.RpcError as e:
             raise HTTPException(
