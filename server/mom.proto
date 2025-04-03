@@ -7,6 +7,15 @@ service TopicService {
     rpc DeleteTopic (DeleteRequest) returns (Response);
 }
 
+service QueueService {
+    rpc CreateQueue (QueueRequest) returns (Response);
+    rpc SubscribeQueue (SubscriptionRequest) returns (Response);
+    rpc SendMessage (MessageRequest) returns (Response);
+    rpc ReceiveMessage (QueueRequest) returns (MessageResponse);
+    rpc DeleteQueue (QueueRequest) returns (Response);
+    rpc GetQueues (TokenRequest) returns (QueueListResponse);
+}
+
 message SubscriptionRequest {
     string topic_name = 1;
     string token = 2;
@@ -25,4 +34,27 @@ message DeleteRequest {
 
 message Response {
     string message = 1;
+}
+
+message QueueRequest {
+    string queue_name = 1;
+    string token = 2;
+}
+
+message MessageRequest {
+    string queue_name = 1;
+    string message = 2;
+    string token = 3;
+}
+
+message MessageResponse {
+    string message = 1;
+}
+
+message TokenRequest {
+    string token = 1;
+}
+
+message QueueListResponse {
+    repeated string queue_names = 1;
 }

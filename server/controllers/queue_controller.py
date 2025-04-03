@@ -4,6 +4,9 @@ from database import insert_queue, find_queue, find_all_queues, update_queue, de
 from models import QueueModel
 from utils import check_redirect, verify_token
 from zookeeper import zk, SERVER_ID, get_tokens, get_token_children
+import mom_pb2
+import mom_pb2_grpc
+import grpc
 
 
 def get_queues(token: str):
@@ -13,6 +16,14 @@ def get_queues(token: str):
     for queue in queues:
         names.append(queue["name"])
     return names
+
+
+def get_grpc_client(server_address):
+    print('------------------- Using gRPC client',
+          server_address, '---------------------')
+    newServer_address = f"{server_address[:server_address.find(':')]}:50051"
+    channel = grpc.insecure_channel(newServer_address)
+    return mom_pb2_grpc.QueueServiceStub(channel)
 
 
 def create_queue(queue: QueueModel, token: str):
@@ -25,7 +36,8 @@ def create_queue(queue: QueueModel, token: str):
     if find_queue(queue.name):
         raise HTTPException(status_code=400, detail="Queue already exists")
 
-    insert_queue({"name": queue.name,"subscribers": [], "messages": [], "pending_messages": {}, "owner": client})
+    insert_queue({"name": queue.name, "subscribers": [],
+                 "messages": [], "pending_messages": {}, "owner": client})
 
     path = f"/mom_queues/{queue.name}"
     zk.ensure_path(path)
@@ -41,11 +53,13 @@ def subscribe_to_queue(queue_name: str, token: str):
 
     if server_redirect is not None:
         try:
-            response = requests.put(f"http://{server_redirect}/queue/subscribe/",
-                                                    params={"queue_name": queue_name, "token": token})
-            return response.json()
-        except:
-            raise HTTPException(status_code=404, detail="Server not found")
+            client = get_grpc_client(server_redirect)
+            response = client.SubscribeQueue(mom_pb2.SubscriptionRequest(
+                queue_name=queue_name, token=token))
+            return {"message": response.message}
+        except grpc.RpcError as e:
+            raise HTTPException(
+                status_code=500, detail="gRPC error: " + e.details())
     else:
         user = get_token_children(token)
         queue = find_queue(queue_name)
@@ -53,7 +67,7 @@ def subscribe_to_queue(queue_name: str, token: str):
             raise HTTPException(status_code=404, detail="Queue not found")
         if user in queue["subscribers"]:
             raise HTTPException(status_code=400, detail="Already subscribed")
-        else: 
+        else:
             queue["subscribers"].append(user)
             queue["pending_messages"][user] = []
 
@@ -67,11 +81,13 @@ def send_message(queue_name: str, message: str, token: str, background_tasks: Ba
 
     if server_redirect is not None:
         try:
-            response = requests.post(f"http://{server_redirect}/queue/send/",
-                                                    params={"queue_name": queue_name, "message": message, "token": token})
-            return response.json()
-        except:
-            raise HTTPException(status_code=404, detail="Server not found")
+            client = get_grpc_client(server_redirect)
+            response = client.SendMessage(mom_pb2.MessageRequest(
+                queue_name=queue_name, message=message, token=token , background_tasks=background_tasks))
+            return {"message": response.message}
+        except grpc.RpcError as e:
+            raise HTTPException(
+                status_code=500, detail="gRPC error: " + e.details())
     else:
         queue = find_queue(queue_name)
         if not queue:
@@ -82,13 +98,14 @@ def send_message(queue_name: str, message: str, token: str, background_tasks: Ba
         else:
             if "current_subscriber_idx" not in queue:
                 queue["current_subscriber_idx"] = 0
-            
+
             subscriber_idx = queue["current_subscriber_idx"]
             subscriber = queue["subscribers"][subscriber_idx]
-            
+
             queue["pending_messages"][subscriber].append(message)
-            
-            queue["current_subscriber_idx"] = (subscriber_idx + 1) % len(queue["subscribers"])
+
+            queue["current_subscriber_idx"] = (
+                subscriber_idx + 1) % len(queue["subscribers"])
 
         update_queue(queue_name, queue)
         return {"message": "Message sent"}
@@ -100,39 +117,44 @@ def receive_message(queue_name: str, token: str):
 
     if server_redirect is not None:
         try:
-            response = requests.get(f"http://{server_redirect}/queue/receive/",
-                                                    params={"queue_name": queue_name, "token": token})
-            return response.json()
-        except:
-            raise HTTPException(status_code=404, detail="Server not found")
+            client = get_grpc_client(server_redirect)
+            response = client.ReceiveMessage(mom_pb2.QueueRequest(
+                queue_name=queue_name, token=token))
+            return {"message": response.message}
+        except grpc.RpcError as e:
+            raise HTTPException(
+                status_code=500, detail="gRPC error: " + e.details())
     else:
         user = get_token_children(token)
         queue = find_queue(queue_name)
-        
+
         if not queue:
             raise HTTPException(status_code=404, detail="Queue not found")
-        
+
         if user not in queue["subscribers"]:
-            raise HTTPException(status_code=403, detail="Not subscribed to this queue")
-        
+            raise HTTPException(
+                status_code=403, detail="Not subscribed to this queue")
+
         if not queue["pending_messages"][user]:
             raise HTTPException(status_code=404, detail="No pending messages")
-        
+
         current_idx = queue.get("current_subscriber_idx", 0)
         next_subscriber = queue["subscribers"][current_idx]
-        
+
         if user != next_subscriber:
             raise HTTPException(
                 status_code=403,
                 detail="Not your turn (Round Robin in progress)"
             )
-        
+
         msg = queue["pending_messages"][user].pop(0)
-        
-        queue["current_subscriber_idx"] = (current_idx + 1) % len(queue["subscribers"])
+
+        queue["current_subscriber_idx"] = (
+            current_idx + 1) % len(queue["subscribers"])
         update_queue(queue_name, queue)
-        
+
         return {"message": msg}
+
 
 def delete_one_queue(queue_name: str, token: str):
     verify_token(token)
@@ -140,11 +162,13 @@ def delete_one_queue(queue_name: str, token: str):
 
     if server_redirect is not None:
         try:
-            response = requests.delete(f"http://{server_redirect}/queue/",
-                                                    params={"queue_name": queue_name, "token": token})
-            return response.json()
-        except:
-            raise HTTPException(status_code=404, detail="Server not found")
+            client = get_grpc_client(server_redirect)
+            response = client.DeleteQueue(mom_pb2.QueueRequest(
+                queue_name=queue_name, token=token))
+            return {"message": response.message}
+        except grpc.RpcError as e:
+            raise HTTPException(
+                status_code=500, detail="gRPC error: " + e.details())
     else:
         client = get_token_children(token)
         queue = find_queue(queue_name)
