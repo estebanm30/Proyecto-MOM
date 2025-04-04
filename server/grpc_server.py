@@ -67,7 +67,7 @@ class MOMService(mom_pb2_grpc.TopicServiceServicer):
             zk.ensure_path(path)
             zk.set(path, SERVER_ID.encode())
 
-        return mom_pb2.TopicResponse(message=f"Topic {topic_name} replicated"
+        return mom_pb2.TopicResponse(message=f"Topic {topic_name} replicated")
 
 
 class QueueServiceHandler(mom_pb2_grpc.QueueServiceServicer):
