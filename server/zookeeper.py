@@ -52,3 +52,13 @@ def close_connection():
         print(f"❌ Server eliminado de Zookeeper: {SERVER_PATH}")
     zk.stop()
     zk.close()
+
+def get_other_servers():
+    all_servers = zk.get_children("/servers")
+    return [server for server in all_servers if server != SERVER_ID]
+
+SERVER_ADDRESS_MAP = {
+    "server1": "127.0.0.1:8000",
+    "server2": "127.0.0.1:8001",
+    "server3": "127.0.0.1:8002",
+}

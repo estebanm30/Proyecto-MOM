@@ -4,7 +4,7 @@ from fastapi import HTTPException, BackgroundTasks
 from database import insert_topic, find_all_topics, find_topic, update_topic, delete_topic
 from models import TopicModel
 from utils import verify_token, check_redirect
-from zookeeper import zk, SERVER_ID, get_token_children, get_topic_server
+from zookeeper import zk, SERVER_ID, get_token_children, get_topic_server, get_other_servers, SERVER_ADDRESS_MAP
 import mom_pb2
 import mom_pb2_grpc
 
@@ -30,6 +30,12 @@ def create_topic(topic: TopicModel, token: str):
     path = f"/mom_topics/{topic.name}"
     zk.ensure_path(path)
     zk.set(path, SERVER_ID.encode())
+    for server_id in get_other_servers():
+        try:
+            client = get_grpc_client(SERVER_ADDRESS_MAP[server_id])
+            client.ReplicateTopic(mom_pb2.TopicRequest(name=topic.name))
+        except grpc.RpcError as e:
+            print(f"❌ Error replicando en {server_id}: {e.details()}")
 
     return {"message": "Topic created"}
 
