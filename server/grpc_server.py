@@ -4,6 +4,7 @@ import time
 import mom_pb2
 import mom_pb2_grpc
 import threading
+from database import insert_topic
 
 from controllers.topic_controller import (
     publish_message, subscribe_to_topic, unsubscribe_from_topic, delete_one_topic
@@ -54,20 +55,21 @@ class MOMService(mom_pb2_grpc.TopicServiceServicer):
             return mom_pb2.Response(message="Error")
 
     def ReplicateTopic(self, request, context):
-        topic_name = request.name
-
-        if find_topic(topic_name):
-            return mom_pb2.TopicResponse(message="Topic already exists")
-
-        insert_topic({"name": topic_name, "subscribers": [],
-                      "messages": [], "pending_messages": {}, "owner": "replica"})
-
-        path = f"/mom_topics/{topic_name}"
-        if not zk.exists(path):
-            zk.ensure_path(path)
-            zk.set(path, SERVER_ID.encode())
-
-        return mom_pb2.TopicResponse(message=f"Topic {topic_name} replicated")
+        
+        try:
+            topic_data = {
+                "name": request.topic_name,
+                "subscribers": list(request.subscribers),
+                "messages": [],
+                "pending_messages": {sub: [] for sub in request.subscribers},
+                "owner": request.owner
+            }
+            insert_topic(topic_data)
+            return mom_pb2.Response(message=f"Topic {request.topic_name} replicated successfully")
+        except Exception as e:
+            context.set_code(grpc.StatusCode.INTERNAL)
+            context.set_details(str(e))
+            return mom_pb2.Response(message="Replication failed")
 
 
 class QueueServiceHandler(mom_pb2_grpc.QueueServiceServicer):

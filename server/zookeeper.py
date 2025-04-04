@@ -57,8 +57,13 @@ def get_other_servers():
     all_servers = zk.get_children("/servers")
     return [server for server in all_servers if server != SERVER_ID]
 
-SERVER_ADDRESS_MAP = {
-    "server1": "127.0.0.1:8000",
-    "server2": "127.0.0.1:8001",
-    "server3": "127.0.0.1:8002",
-}
+def get_all_servers():
+    servers_path = "/servers"
+    if zk.exists(servers_path):
+        children = zk.get_children(servers_path)
+        servers = []
+        for child in children:
+            data, _ = zk.get(f"{servers_path}/{child}")
+            servers.append(data.decode())
+        return servers
+    return []

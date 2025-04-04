@@ -30,12 +30,20 @@ def create_topic(topic: TopicModel, token: str):
     path = f"/mom_topics/{topic.name}"
     zk.ensure_path(path)
     zk.set(path, SERVER_ID.encode())
-    for server_id in get_other_servers():
-        try:
-            client = get_grpc_client(SERVER_ADDRESS_MAP[server_id])
-            client.ReplicateTopic(mom_pb2.TopicRequest(name=topic.name))
-        except grpc.RpcError as e:
-            print(f"❌ Error replicando en {server_id}: {e.details()}")
+    
+    servers = get_all_servers()
+    for server in servers:
+        if server != SERVER_ID:  # No replicar en sí mismo
+            try:
+                grpc_client = get_grpc_client(server)
+                grpc_client.ReplicateTopic(mom_pb2.ReplicateTopicRequest(
+                    topic_name=topic.name,
+                    owner=client,
+                    subscribers=[]
+                ))
+            except grpc.RpcError as e:
+                print(f"Error replicating topic to server {server}: {e.details()}")
+                # Opcional: Puedes implementar reintentos aquí
 
     return {"message": "Topic created"}
 
