@@ -52,22 +52,22 @@ class MOMService(mom_pb2_grpc.TopicServiceServicer):
             context.set_code(grpc.StatusCode.INVALID_ARGUMENT)
             context.set_details(e.detail)
             return mom_pb2.Response(message="Error")
-            
+
     def ReplicateTopic(self, request, context):
-    topic_name = request.name
+        topic_name = request.name
 
-    if find_topic(topic_name):
-        return mom_pb2.TopicResponse(message="Topic already exists")
+        if find_topic(topic_name):
+            return mom_pb2.TopicResponse(message="Topic already exists")
 
-    insert_topic({"name": topic_name, "subscribers": [],
-                  "messages": [], "pending_messages": {}, "owner": "replica"})
+        insert_topic({"name": topic_name, "subscribers": [],
+                      "messages": [], "pending_messages": {}, "owner": "replica"})
 
-    path = f"/mom_topics/{topic_name}"
-    if not zk.exists(path):
-        zk.ensure_path(path)
-        zk.set(path, SERVER_ID.encode())
+        path = f"/mom_topics/{topic_name}"
+        if not zk.exists(path):
+            zk.ensure_path(path)
+            zk.set(path, SERVER_ID.encode())
 
-    return mom_pb2.TopicResponse(message=f"Topic {topic_name} replicated"
+        return mom_pb2.TopicResponse(message=f"Topic {topic_name} replicated"
 
 
 class QueueServiceHandler(mom_pb2_grpc.QueueServiceServicer):
