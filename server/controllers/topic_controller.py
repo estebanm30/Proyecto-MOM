@@ -24,14 +24,35 @@ def create_topic(topic: TopicModel, token: str):
     client = get_token_children(token)
     if find_topic(topic.name):
         raise HTTPException(status_code=400, detail="Topic already exists")
-    insert_topic({"name": topic.name, "subscribers": [],
-                 "messages": [], "pending_messages": {}, "owner": client})
+
+    topic_data = {
+        "name": topic.name,
+        "subscribers": [],
+        "messages": [],
+        "pending_messages": {},
+        "owner": client
+    }
+
+    insert_topic(topic_data)
 
     path = f"/mom_topics/{topic.name}"
     zk.ensure_path(path)
     zk.set(path, SERVER_ID.encode())
 
-    return {"message": "Topic created"}
+    # Replicar en otros servidores (lista de direcciones de tus servidores)
+    other_servers = ["server2:50051", "server3:50051"]  # Ajusta según tus IPs/puertos
+    
+    for server in other_servers:
+        try:
+            stub = get_grpc_client(server)
+            stub.ReplicateTopic(mom_pb2.ReplicateTopicRequest(
+                topic_name=topic.name,
+                owner=client
+            ))
+        except grpc.RpcError as e:
+            print(f"⚠️ Failed to replicate topic on {server}: {e.details()}")
+
+    return {"message": "Topic created and replicated"}
 
 
 def get_grpc_client(server_address):

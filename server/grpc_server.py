@@ -52,6 +52,22 @@ class MOMService(mom_pb2_grpc.TopicServiceServicer):
             context.set_code(grpc.StatusCode.INVALID_ARGUMENT)
             context.set_details(e.detail)
             return mom_pb2.Response(message="Error")
+    
+    def ReplicateTopic(self, request, context):
+        try:
+            if not find_topic(request.topic_name):  
+                insert_topic({
+                    "name": request.topic_name,
+                    "subscribers": [],
+                    "messages": [],
+                    "pending_messages": {},
+                    "owner": request.owner
+                })
+            return mom_pb2.Response(message=f"Replicated topic {request.topic_name}")
+        except Exception as e:
+            context.set_code(grpc.StatusCode.INTERNAL)
+            context.set_details(str(e))
+            return mom_pb2.Response(message="Replication failed")
 
 
 class QueueServiceHandler(mom_pb2_grpc.QueueServiceServicer):

@@ -5,6 +5,7 @@ service TopicService {
     rpc Unsubscribe (SubscriptionRequest) returns (Response);
     rpc Publish (PublishRequest) returns (Response);
     rpc DeleteTopic (DeleteRequest) returns (Response);
+    rpc ReplicateTopic (ReplicateTopicRequest) returns (Response);
 }
 
 service QueueService {
@@ -63,4 +64,9 @@ message QueueListResponse {
 message QueueSubscriptionRequest {
     string queue_name = 1;
     string token = 2;
+}
+
+message ReplicateTopicRequest {
+    string topic_name = 1;
+    string owner = 2;  
 }
