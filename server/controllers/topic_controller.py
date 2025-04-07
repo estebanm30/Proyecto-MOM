@@ -65,8 +65,27 @@ def create_topic(topic: TopicModel, token: str):
             print(f"⚠️ Failed to replicate topic on {replica_server}: {e.details()}")
     else:
         print("⚠️ No available servers for replication")
-    """
+    
     return {"message": "Topic created and replicated"}
+    """
+    # 4. Replicación Round Robin a UN solo servidor alterno
+    replica_server, available_servers = get_round_robin_replica(SERVER_ID)
+    
+    if replica_server:
+        try:
+            print(f"🔁 [REPLICACIÓN] Seleccionado servidor {replica_server} (de disponibles: {available_servers})")
+            stub = get_grpc_client(replica_server)
+            response = stub.ReplicateTopic(mom_pb2.ReplicateTopicRequest(
+                topic_name=topic.name,
+                owner=client
+            ))
+            print(f"✅ [REPLICACIÓN EXITOSA] en {replica_server}: {response.message}")
+        except grpc.RpcError as e:
+            print(f"⚠️ [REPLICACIÓN FALLIDA] en {replica_server}: {e.details()}")
+    else:
+        print("⚠️ [REPLICACIÓN] No hay servidores disponibles para replicación")
+    
+    return {"message": f"Tópico creado en servidor {SERVER_ID} y replicado en {replica_server if replica_server else 'ningún servidor'}"}
 
 
 def get_grpc_client(server_address):

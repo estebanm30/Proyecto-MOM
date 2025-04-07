@@ -62,15 +62,17 @@ def get_round_robin_replica(current_server_id):
     """
     Selecciona un servidor para replicación usando round robin
     Excluye el servidor actual y alterna entre los otros dos disponibles
+    Retorna: (servidor_seleccionado, lista_de_servidores_disponibles)
     """
     # Lista fija de servidores (IP:puerto)
     all_servers = ["44.194.117.112:50051", "44.214.10.205:50051", "52.86.105.153:50051"]
     
-    # Filtrar el servidor actual
-    candidates = [s for s in all_servers if not s.startswith(current_server_id)]
+    # Filtrar el servidor actual (comparando solo la IP)
+    current_ip = current_server_id.split(':')[0] if ':' in current_server_id else current_server_id
+    candidates = [s for s in all_servers if not s.startswith(current_ip)]
     
     if not candidates:
-        return None
+        return None, []
     
     # Path en ZooKeeper para almacenar el índice round robin
     rr_path = "/round_robin_index"
@@ -86,9 +88,9 @@ def get_round_robin_replica(current_server_id):
         next_index = (current_index + 1) % len(candidates)
         zk.set(rr_path, str(next_index).encode())
         
-        return candidates[next_index]
+        return candidates[next_index], candidates
     except Exception as e:
         print(f"⚠️ Error en round robin selection: {str(e)}")
         # Fallback: devolver el primer candidato disponible
-        return candidates[0] if candidates else None
+        return (candidates[0] if candidates else None), candidates
 
