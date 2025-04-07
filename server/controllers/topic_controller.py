@@ -40,7 +40,7 @@ def create_topic(topic: TopicModel, token: str):
     zk.set(path, SERVER_ID.encode())
 
     # Replicar en otros servidores (lista de direcciones de tus servidores)
-    other_servers = ["44.194.117.112:50051", "44.214.10.205:50051", "52.86.105.153"] # Cambiar dinamicamente
+    other_servers = ["44.194.117.112:50051", "44.214.10.205:50051", "52.86.105.153:50051"] # Cambiar dinamicamente
 
     for server in other_servers:
         try:
@@ -87,7 +87,7 @@ def subscribe_to_topic(topic_name: str, token: str):
             topic['pending_messages'][user] = []
 
         update_topic(topic_name, topic)
-        other_servers = ["44.194.117.112:50051", "44.214.10.205:50051", "52.86.105.153"]
+        other_servers = ["44.194.117.112:50051", "44.214.10.205:50051", "52.86.105.153:50051"] # Cambiar dinamicamente
         for server in other_servers:
             try:
                 stub = get_grpc_client(server)
