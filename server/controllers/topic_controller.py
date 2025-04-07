@@ -4,7 +4,7 @@ from fastapi import HTTPException, BackgroundTasks
 from database import insert_topic, find_all_topics, find_topic, update_topic, delete_topic
 from models import TopicModel
 from utils import verify_token, check_redirect
-from zookeeper import zk, SERVER_ID, get_token_children, get_topic_server
+from zookeeper import zk, SERVER_ID, get_token_children, get_topic_server, get_next_replica_server, get_server_address
 import mom_pb2
 import mom_pb2_grpc
 
@@ -39,19 +39,41 @@ def create_topic(topic: TopicModel, token: str):
     zk.ensure_path(path)
     zk.set(path, SERVER_ID.encode())
 
+    #original
     # Replicar en otros servidores (lista de direcciones de tus servidores)
-    other_servers = ["44.194.117.112:50051", "44.214.10.205:50051", "52.86.105.153:50051"] # Cambiar dinamicamente
+    #other_servers = ["44.194.117.112:50051", "44.214.10.205:50051", "52.86.105.153:50051"] # Cambiar dinamicamente
 
-    for server in other_servers:
-        try:
-            stub = get_grpc_client(server)
-            stub.ReplicateTopic(mom_pb2.ReplicateTopicRequest(
-                topic_name=topic.name,
-                owner=client
-            ))
-            print(f"✅ Topic replicated on {server}")
-        except grpc.RpcError as e:
-            print(f"⚠️ Failed to replicate topic on {server}: {e.details()}")
+    # replica + rr
+    # Obtener el próximo servidor para replicación (round robin)
+    replica_server_id = zk.get_next_replica_server(SERVER_ID)
+
+    if replica_server_id:
+        replica_server = zk.get_server_address(replica_server_id)
+        if replica_server:
+            try:
+                stub = get_grpc_client(replica_server)
+                stub.ReplicateTopic(mom_pb2.ReplicateTopicRequest(
+                    topic_name=topic.name,
+                    owner=client
+                ))
+                print(f"✅ Topic replicated on {replica_server} (Round Robin selection)")
+            except grpc.RpcError as e:
+                print(f"⚠️ Failed to replicate topic on {replica_server}: {e.details()}")
+                # Intento con el siguiente servidor disponible
+                fallback_servers = [s for s in ["44.194.117.112:50051", "44.214.10.205:50051", "52.86.105.153:50051"] 
+                                  if f"{s.split(':')[0]}" != SERVER_ID and f"{s.split(':')[0]}" != replica_server_id]
+                if fallback_servers:
+                    try:
+                        stub = get_grpc_client(fallback_servers[0])
+                        stub.ReplicateTopic(mom_pb2.ReplicateTopicRequest(
+                            topic_name=topic.name,
+                            owner=client
+                        ))
+                        print(f"✅ Fallback replication on {fallback_servers[0]}")
+                    except grpc.RpcError as e:
+                        print(f"⚠️ Failed fallback replication: {e.details()}")
+    else:
+        print("⚠️ No available servers for replication")
 
     return {"message": "Topic created and replicated"}
 
@@ -222,7 +244,7 @@ def delete_one_topic(topic_name: str, token: str):
                     print(f"✅ Topic deletion replicated on {server}")
                 except grpc.RpcError as e:
                     print(f"⚠️ Failed to replicate topic deletion on {server}: {e.details()}")
-                    
+
             time.sleep(2)
             delete_topic(topic_name)
             path = f"/mom_topics/{topic_name}"
