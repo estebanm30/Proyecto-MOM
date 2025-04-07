@@ -69,6 +69,11 @@ class TopicServiceStub(object):
                 request_serializer=mom__pb2.ReplicateMessageRequest.SerializeToString,
                 response_deserializer=mom__pb2.Response.FromString,
                 _registered_method=True)
+        self.ReplicateUnsubscription = channel.unary_unary(
+                '/TopicService/ReplicateUnsubscription',
+                request_serializer=mom__pb2.ReplicateUnsubscriptionRequest.SerializeToString,
+                response_deserializer=mom__pb2.Response.FromString,
+                _registered_method=True)
 
 
 class TopicServiceServicer(object):
@@ -116,6 +121,12 @@ class TopicServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def ReplicateUnsubscription(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_TopicServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -152,6 +163,11 @@ def add_TopicServiceServicer_to_server(servicer, server):
             'ReplicateMessage': grpc.unary_unary_rpc_method_handler(
                     servicer.ReplicateMessage,
                     request_deserializer=mom__pb2.ReplicateMessageRequest.FromString,
+                    response_serializer=mom__pb2.Response.SerializeToString,
+            ),
+            'ReplicateUnsubscription': grpc.unary_unary_rpc_method_handler(
+                    servicer.ReplicateUnsubscription,
+                    request_deserializer=mom__pb2.ReplicateUnsubscriptionRequest.FromString,
                     response_serializer=mom__pb2.Response.SerializeToString,
             ),
     }
@@ -343,6 +359,33 @@ class TopicService(object):
             target,
             '/TopicService/ReplicateMessage',
             mom__pb2.ReplicateMessageRequest.SerializeToString,
+            mom__pb2.Response.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def ReplicateUnsubscription(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/TopicService/ReplicateUnsubscription',
+            mom__pb2.ReplicateUnsubscriptionRequest.SerializeToString,
             mom__pb2.Response.FromString,
             options,
             channel_credentials,

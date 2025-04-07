@@ -127,6 +127,18 @@ def unsubscribe_from_topic(topic_name: str, token: str):
             topic['subscribers'].remove(user)
             topic['pending_messages'].pop(user, None)
         update_topic(topic_name, topic)
+
+        other_servers = ["44.194.117.112:50051", "44.214.10.205:50051", "52.86.105.153:50051"] # Cambiar dinamicamente
+        for server in other_servers:
+            try:
+                stub = get_grpc_client(server)
+                stub.ReplicateUnsubscription(mom_pb2.ReplicateUnsubscriptionRequest(
+                    topic_name=topic_name,
+                    subscriber=user
+                ))
+                print(f"✅ Unsubscription replicated on {server}")
+            except grpc.RpcError as e:
+                print(f"⚠️ Failed to replicate unsubscription on {server}: {e.details()}")
         return {"message": f"{user} unsubscribed from {topic_name}"}
 
 
@@ -167,7 +179,7 @@ def publish_message(topic_name: str, message: str, token: str, background_tasks:
                 print(f"✅ Message replicated on {server}")
             except grpc.RpcError as e:
                 print(f"⚠️ Failed to replicate message on {server}: {e.details()}")
-                
+
         return {"message": f"Message published to {len(topic['subscribers'])} subscribers"}
 
 
