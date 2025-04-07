@@ -95,10 +95,10 @@ class MOMService(mom_pb2_grpc.TopicServiceServicer):
         try:
             topic = find_topic(request.topic_name)
             if topic:
-                # Actualizar mensajes del tópico
+                
                 topic['messages'].append(request.message)
                 
-                # Actualizar pending_messages para cada suscriptor
+                
                 for subscriber in request.subscribers:
                     if subscriber in topic['pending_messages']:
                         topic['pending_messages'][subscriber].append(request.message)
@@ -140,19 +140,19 @@ class MOMService(mom_pb2_grpc.TopicServiceServicer):
         try:
             topic = find_topic(request.topic_name)
             if topic:
-                # Notificar a los suscriptores
+                
                 topic['messages'].append(request.last_message)
                 for subscriber in request.subscribers:
                     if subscriber in topic['pending_messages']:
                         topic['pending_messages'][subscriber].append(request.last_message)
                 
                 update_topic(request.topic_name, topic)
-                time.sleep(2)  # Pequeño delay para asegurar que los mensajes se propaguen
+                time.sleep(2)  
                 
-                # Eliminar el tópico
+                
                 delete_topic(request.topic_name)
                 try:
-                    # Eliminar el nodo en ZooKeeper (si existe)
+                    
                     path = f"/mom_topics/{request.topic_name}"
                     if zk.exists(path):
                         zk.delete(path)

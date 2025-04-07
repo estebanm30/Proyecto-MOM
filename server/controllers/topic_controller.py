@@ -33,9 +33,8 @@ def create_topic(topic: TopicModel, token: str):
         "owner": client
     }
 
-    #insert_topic(topic_data)
     try:
-        insert_topic(topic_data)  # <-- Asegurar que esto funciona
+        insert_topic(topic_data)
         print(f"✅ Topic created LOCALLY on {SERVER_ID}")
     except Exception as e:
         print(f"⛔ Failed to create topic locally: {str(e)}")
@@ -45,30 +44,6 @@ def create_topic(topic: TopicModel, token: str):
     zk.ensure_path(path)
     zk.set(path, SERVER_ID.encode())
 
-    #original
-    # Replicar en otros servidores (lista de direcciones de tus servidores)
-    #other_servers = ["44.194.117.112:50051", "44.214.10.205:50051", "52.86.105.153:50051"] # Cambiar dinamicamente
-    #other_servers = get_round_robin_replica(SERVER_ID)
-    #for server in other_servers:
-    """
-    replica_server = get_round_robin_replica(SERVER_ID)
-    
-    if replica_server:
-        try:
-            stub = get_grpc_client(replica_server)
-            stub.ReplicateTopic(mom_pb2.ReplicateTopicRequest(
-                topic_name=topic.name,
-                owner=client
-            ))
-            print(f"✅ Topic replicated on {replica_server} (Round Robin selection)")
-        except grpc.RpcError as e:
-            print(f"⚠️ Failed to replicate topic on {replica_server}: {e.details()}")
-    else:
-        print("⚠️ No available servers for replication")
-    
-    return {"message": "Topic created and replicated"}
-    """
-    # 4. Replicación Round Robin a UN solo servidor alterno
     replica_server, available_servers = get_round_robin_replica(SERVER_ID)
     
     if replica_server:
