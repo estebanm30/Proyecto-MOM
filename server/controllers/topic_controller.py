@@ -50,6 +50,7 @@ def create_topic(topic: TopicModel, token: str):
     #other_servers = ["44.194.117.112:50051", "44.214.10.205:50051", "52.86.105.153:50051"] # Cambiar dinamicamente
     #other_servers = get_round_robin_replica(SERVER_ID)
     #for server in other_servers:
+    """
     replica_server = get_round_robin_replica(SERVER_ID)
     
     if replica_server:
@@ -64,7 +65,7 @@ def create_topic(topic: TopicModel, token: str):
             print(f"⚠️ Failed to replicate topic on {replica_server}: {e.details()}")
     else:
         print("⚠️ No available servers for replication")
-    
+    """
     return {"message": "Topic created and replicated"}
 
 
