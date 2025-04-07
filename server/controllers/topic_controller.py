@@ -4,7 +4,7 @@ from fastapi import HTTPException, BackgroundTasks
 from database import insert_topic, find_all_topics, find_topic, update_topic, delete_topic
 from models import TopicModel
 from utils import verify_token, check_redirect
-from zookeeper import zk, SERVER_ID, get_token_children, get_topic_server, get_active_servers
+from zookeeper import zk, SERVER_ID, get_token_children, get_topic_server
 import mom_pb2
 import mom_pb2_grpc
 
@@ -40,18 +40,15 @@ def create_topic(topic: TopicModel, token: str):
     zk.set(path, SERVER_ID.encode())
 
     # Replicar en otros servidores (lista de direcciones de tus servidores)
-    other_servers = get_active_servers()  # ["44.194.117.112:50051", "44.214.10.205:50051"]
-    source_ip = SERVER_ID.split(":")[0]  # Para "44.194.117.112:8000" -> "44.194.117.112"
-    replication_count = 0
+    other_servers = ["44.194.117.112:50051", "44.214.10.205:50051"] # Cambiar dinamicamente
+
     for server in other_servers:
         try:
             stub = get_grpc_client(server)
             stub.ReplicateTopic(mom_pb2.ReplicateTopicRequest(
                 topic_name=topic.name,
-                owner=client,
-                source_server=source_ip
+                owner=client
             ))
-            replication_count += 1
             print(f"✅ Topic replicated on {server}")
         except grpc.RpcError as e:
             print(f"⚠️ Failed to replicate topic on {server}: {e.details()}")

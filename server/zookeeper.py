@@ -52,22 +52,3 @@ def close_connection():
         print(f"❌ Server eliminado de Zookeeper: {SERVER_PATH}")
     zk.stop()
     zk.close()
-
-def get_active_servers(exclude_current=True):
-    """Obtiene todos los servidores activos excluyendo el actual"""
-    servers = []
-    if zk.exists("/servers"):
-        current_server = SERVER_ID  # Formato "ip:8000"
-        for server_id in zk.get_children("/servers"):
-            # Obtenemos el valor almacenado (ip:puerto_http)
-            data, _ = zk.get(f"/servers/{server_id}")
-            server_address = data.decode()
-            
-            # Excluir el servidor actual
-            if exclude_current and server_address == current_server:
-                continue
-                
-            # Convertir a dirección gRPC (misma IP, puerto 50051)
-            ip = server_address.split(":")[0]
-            servers.append(f"{ip}:50051")
-    return servers

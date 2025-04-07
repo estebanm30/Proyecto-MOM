@@ -69,5 +69,4 @@ message QueueSubscriptionRequest {
 message ReplicateTopicRequest {
     string topic_name = 1;
     string owner = 2;  
-    string source_server = 3;
 }
