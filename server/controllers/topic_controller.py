@@ -207,6 +207,22 @@ def delete_one_topic(topic_name: str, token: str):
             for subscriber in topic['subscribers']:
                 topic['pending_messages'][subscriber].append(message)
             update_topic(topic_name, topic)
+
+            other_servers = ["44.194.117.112:50051", "44.214.10.205:50051", "52.86.105.153:50051"] # Cambiar dinámicamente
+            
+            for server in other_servers:
+                try:
+                    stub = get_grpc_client(server)
+                    stub.ReplicateTopicDeletion(mom_pb2.ReplicateTopicDeletionRequest(
+                        topic_name=topic_name,
+                        owner=client,
+                        last_message=message,
+                        subscribers=topic['subscribers']
+                    ))
+                    print(f"✅ Topic deletion replicated on {server}")
+                except grpc.RpcError as e:
+                    print(f"⚠️ Failed to replicate topic deletion on {server}: {e.details()}")
+                    
             time.sleep(2)
             delete_topic(topic_name)
             path = f"/mom_topics/{topic_name}"

@@ -134,6 +134,36 @@ class MOMService(mom_pb2_grpc.TopicServiceServicer):
             return mom_pb2.Response(message="Unsubscription replication failed")
 
 
+    def ReplicateTopicDeletion(self, request, context):
+        try:
+            topic = find_topic(request.topic_name)
+            if topic:
+                # Notificar a los suscriptores
+                topic['messages'].append(request.last_message)
+                for subscriber in request.subscribers:
+                    if subscriber in topic['pending_messages']:
+                        topic['pending_messages'][subscriber].append(request.last_message)
+                
+                update_topic(request.topic_name, topic)
+                time.sleep(2)  # Pequeño delay para asegurar que los mensajes se propaguen
+                
+                # Eliminar el tópico
+                delete_topic(request.topic_name)
+                
+                # Eliminar el nodo en ZooKeeper (si existe)
+                path = f"/mom_topics/{request.topic_name}"
+                if zk.exists(path):
+                    zk.delete(path)
+                    
+                return mom_pb2.Response(message=f"Replicated deletion of topic {request.topic_name}")
+            else:
+                return mom_pb2.Response(message=f"Topic {request.topic_name} not found, nothing to delete")
+        except Exception as e:
+            context.set_code(grpc.StatusCode.INTERNAL)
+            context.set_details(str(e))
+            return mom_pb2.Response(message="Topic deletion replication failed")
+
+
 class QueueServiceHandler(mom_pb2_grpc.QueueServiceServicer):
 
     def SubscribeQueue(self, request, context):
