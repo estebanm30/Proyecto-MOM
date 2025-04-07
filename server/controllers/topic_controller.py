@@ -4,7 +4,7 @@ from fastapi import HTTPException, BackgroundTasks
 from database import insert_topic, find_all_topics, find_topic, update_topic, delete_topic
 from models import TopicModel
 from utils import verify_token, check_redirect
-from zookeeper import zk, SERVER_ID, get_token_children, get_topic_server, get_next_replica_server, get_server_address
+from zookeeper import zk, SERVER_ID, get_token_children, get_topic_server
 import mom_pb2
 import mom_pb2_grpc
 
