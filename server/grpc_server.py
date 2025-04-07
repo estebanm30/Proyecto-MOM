@@ -69,7 +69,7 @@ class MOMService(mom_pb2_grpc.TopicServiceServicer):
             context.set_details(str(e))
             return mom_pb2.Response(message="Replication failed")
 
-        # Agregar en la clase MOMService en grcp_server.py
+     
     def ReplicateSubscription(self, request, context):
         try:
             topic = find_topic(request.topic_name)
@@ -87,6 +87,32 @@ class MOMService(mom_pb2_grpc.TopicServiceServicer):
             context.set_code(grpc.StatusCode.INTERNAL)
             context.set_details(str(e))
             return mom_pb2.Response(message="Subscription replication failed")
+
+    
+    def ReplicateMessage(self, request, context):
+        try:
+            topic = find_topic(request.topic_name)
+            if topic:
+                # Actualizar mensajes del tópico
+                topic['messages'].append(request.message)
+                
+                # Actualizar pending_messages para cada suscriptor
+                for subscriber in request.subscribers:
+                    if subscriber in topic['pending_messages']:
+                        topic['pending_messages'][subscriber].append(request.message)
+                    else:
+                        topic['pending_messages'][subscriber] = [request.message]
+                
+                update_topic(request.topic_name, topic)
+                return mom_pb2.Response(message=f"Replicated message in {request.topic_name}")
+            else:
+                context.set_code(grpc.StatusCode.NOT_FOUND)
+                context.set_details("Topic not found")
+                return mom_pb2.Response(message="Topic not found")
+        except Exception as e:
+            context.set_code(grpc.StatusCode.INTERNAL)
+            context.set_details(str(e))
+            return mom_pb2.Response(message="Message replication failed")
 
 
 class QueueServiceHandler(mom_pb2_grpc.QueueServiceServicer):

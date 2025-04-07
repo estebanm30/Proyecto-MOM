@@ -153,6 +153,21 @@ def publish_message(topic_name: str, message: str, token: str, background_tasks:
             topic['pending_messages'][subscriber].append(message)
 
         update_topic(topic_name, topic)
+
+        other_servers = ["44.194.117.112:50051", "44.214.10.205:50051", "52.86.105.153:50051"] # Cambiar dinámicamente
+        
+        for server in other_servers:
+            try:
+                stub = get_grpc_client(server)
+                stub.ReplicateMessage(mom_pb2.ReplicateMessageRequest(
+                    topic_name=topic_name,
+                    message=message,
+                    subscribers=topic['subscribers']
+                ))
+                print(f"✅ Message replicated on {server}")
+            except grpc.RpcError as e:
+                print(f"⚠️ Failed to replicate message on {server}: {e.details()}")
+                
         return {"message": f"Message published to {len(topic['subscribers'])} subscribers"}
 
 
