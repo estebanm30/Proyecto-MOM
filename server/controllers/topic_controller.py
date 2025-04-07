@@ -87,6 +87,19 @@ def subscribe_to_topic(topic_name: str, token: str):
             topic['pending_messages'][user] = []
 
         update_topic(topic_name, topic)
+        other_servers = ["44.194.117.112:50051", "44.214.10.205:50051", "52.86.105.153"]
+        for server in other_servers:
+            try:
+                stub = get_grpc_client(server)
+                stub.ReplicateSubscription(mom_pb2.ReplicateSubscriptionRequest(
+                    topic_name=topic_name,
+                    subscriber=user
+                ))
+                print(f"✅ Subscription replicated on {server}")
+            except grpc.RpcError as e:
+                print(f"⚠️ Failed to replicate subscription on {server}: {e.details()}")
+
+        
         return {"message": f"{user} subscribed to {topic_name}"}
 
 
