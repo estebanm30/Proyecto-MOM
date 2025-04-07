@@ -41,7 +41,7 @@ def create_topic(topic: TopicModel, token: str):
 
     # Replicar en otros servidores (lista de direcciones de tus servidores)
     other_servers = get_active_servers()  # ["44.194.117.112:50051", "44.214.10.205:50051"]
-
+    source_ip = SERVER_ID.split(":")[0]  # Para "44.194.117.112:8000" -> "44.194.117.112"
     replication_count = 0
     for server in other_servers:
         try:
@@ -49,7 +49,7 @@ def create_topic(topic: TopicModel, token: str):
             stub.ReplicateTopic(mom_pb2.ReplicateTopicRequest(
                 topic_name=topic.name,
                 owner=client,
-                source_server=SERVER_ID
+                source_server=source_ip
             ))
             replication_count += 1
             print(f"✅ Topic replicated on {server}")
