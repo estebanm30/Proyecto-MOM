@@ -48,7 +48,7 @@ def create_topic(topic: TopicModel, token: str):
             stub = get_grpc_client(server)
             stub.ReplicateTopic(mom_pb2.ReplicateTopicRequest(
                 topic_name=topic.name,
-                owner=client
+                owner=client,
                 source_server=SERVER_ID
             ))
             replication_count += 1
