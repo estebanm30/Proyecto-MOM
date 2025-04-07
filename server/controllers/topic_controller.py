@@ -40,7 +40,7 @@ def create_topic(topic: TopicModel, token: str):
     zk.set(path, SERVER_ID.encode())
 
     # Replicar en otros servidores (lista de direcciones de tus servidores)
-    other_servers = ["44.194.117.112:50051", "44.214.10.205:50051"] # Cambiar dinamicamente
+    other_servers = ["44.194.117.112:50051", "44.214.10.205:50051", "52.86.105.153"] # Cambiar dinamicamente
 
     for server in other_servers:
         try:
