@@ -33,7 +33,13 @@ def create_topic(topic: TopicModel, token: str):
         "owner": client
     }
 
-    insert_topic(topic_data)
+    #insert_topic(topic_data)
+    try:
+        insert_topic(topic_data)  # <-- Asegurar que esto funciona
+        print(f"✅ Topic created LOCALLY on {SERVER_ID}")
+    except Exception as e:
+        print(f"⛔ Failed to create topic locally: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to create topic")
 
     path = f"/mom_topics/{topic.name}"
     zk.ensure_path(path)
