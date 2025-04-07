@@ -4,7 +4,7 @@ from fastapi import HTTPException, BackgroundTasks
 from database import insert_topic, find_all_topics, find_topic, update_topic, delete_topic
 from models import TopicModel
 from utils import verify_token, check_redirect
-from zookeeper import zk, SERVER_ID, get_token_children, get_topic_server
+from zookeeper import zk, SERVER_ID, get_token_children, get_topic_server, get_round_robin_replica
 import mom_pb2
 import mom_pb2_grpc
 
@@ -41,7 +41,8 @@ def create_topic(topic: TopicModel, token: str):
 
     #original
     # Replicar en otros servidores (lista de direcciones de tus servidores)
-    other_servers = ["44.194.117.112:50051", "44.214.10.205:50051", "52.86.105.153:50051"] # Cambiar dinamicamente
+    #other_servers = ["44.194.117.112:50051", "44.214.10.205:50051", "52.86.105.153:50051"] # Cambiar dinamicamente
+    other_servers = get_round_robin_replica(SERVER_ID)
     for server in other_servers:
         try:
             stub = get_grpc_client(server)

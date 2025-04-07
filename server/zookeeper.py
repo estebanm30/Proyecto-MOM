@@ -56,7 +56,39 @@ def close_connection():
 def get_zk_client():
     return zk
 
-def get_active_servers():
-    """Obtiene la lista de servidores activos"""
-    servers = zk.get_children("/servers")
-    return servers
+# Añadir al final de zookeeper.py
+
+def get_round_robin_replica(current_server_id):
+    """
+    Selecciona un servidor para replicación usando round robin
+    Excluye el servidor actual y alterna entre los otros dos disponibles
+    """
+    # Lista fija de servidores (IP:puerto)
+    all_servers = ["44.194.117.112:50051", "44.214.10.205:50051", "52.86.105.153:50051"]
+    
+    # Filtrar el servidor actual
+    candidates = [s for s in all_servers if not s.startswith(current_server_id)]
+    
+    if not candidates:
+        return None
+    
+    # Path en ZooKeeper para almacenar el índice round robin
+    rr_path = "/round_robin_index"
+    
+    try:
+        # Crear el nodo si no existe
+        if not zk.exists(rr_path):
+            zk.create(rr_path, b"0")
+        
+        # Obtener y actualizar el índice atómicamente
+        current_index, _ = zk.get(rr_path)
+        current_index = int(current_index.decode())
+        next_index = (current_index + 1) % len(candidates)
+        zk.set(rr_path, str(next_index).encode())
+        
+        return candidates[next_index]
+    except Exception as e:
+        print(f"⚠️ Error en round robin selection: {str(e)}")
+        # Fallback: devolver el primer candidato disponible
+        return candidates[0] if candidates else None
+
