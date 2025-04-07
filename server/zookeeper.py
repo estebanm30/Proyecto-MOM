@@ -52,3 +52,6 @@ def close_connection():
         print(f"❌ Server eliminado de Zookeeper: {SERVER_PATH}")
     zk.stop()
     zk.close()
+
+def get_zk_client():
+    return zk

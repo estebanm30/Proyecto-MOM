@@ -10,9 +10,11 @@ from controllers.topic_controller import (
 )
 from controllers.queue_controller import subscribe_to_queue, send_message, receive_message, delete_one_queue, unsubscribe_to_queue
 from fastapi import HTTPException, BackgroundTasks
-
+from zookeeper import get_zk_client
 
 class MOMService(mom_pb2_grpc.TopicServiceServicer):
+    def __init__(self):
+        self.zk = get_zk_client()
 
     def Publish(self, request, context):
         try:
@@ -149,11 +151,13 @@ class MOMService(mom_pb2_grpc.TopicServiceServicer):
                 
                 # Eliminar el tópico
                 delete_topic(request.topic_name)
-                
-                # Eliminar el nodo en ZooKeeper (si existe)
-                path = f"/mom_topics/{request.topic_name}"
-                if zk.exists(path):
-                    zk.delete(path)
+                try:
+                    # Eliminar el nodo en ZooKeeper (si existe)
+                    path = f"/mom_topics/{request.topic_name}"
+                    if zk.exists(path):
+                        zk.delete(path)
+                except Exception as e:
+                    print(f"Error deleting topic from ZooKeeper: {e}")
                     
                 return mom_pb2.Response(message=f"Replicated deletion of topic {request.topic_name}")
             else:
