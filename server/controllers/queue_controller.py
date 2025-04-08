@@ -158,7 +158,7 @@ def send_message(queue_name: str, message: str, token: str):
                     queue_name=queue_name,
                     message=message,
                     subscriber=subscriber if subscriber else "",
-                    current_subscriber_idx=current_subscriber_idx
+                    current_subscriber_idx=subscriber_idx
                 ))
                 print(f"✅ Queue message replicated on {server}")
             except grpc.RpcError as e:
