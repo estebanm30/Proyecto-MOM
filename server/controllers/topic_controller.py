@@ -102,7 +102,7 @@ def subscribe_to_topic(topic_name: str, token: str):
             try:
                 stub = get_grpc_client(server)
                 stub.ReplicateSubscription(mom_pb2.ReplicateSubscriptionRequest(
-                    topic_name=topic.name + "_replica",
+                    topic_name=topic_name + "_replica",
                     subscriber=user
                 ))
                 print(f"✅ Subscription replicated on {server}")
@@ -144,7 +144,7 @@ def unsubscribe_from_topic(topic_name: str, token: str):
             try:
                 stub = get_grpc_client(server)
                 stub.ReplicateUnsubscription(mom_pb2.ReplicateUnsubscriptionRequest(
-                    topic_name=topic.name + "_replica",
+                    topic_name=topic_name + "_replica",
                     subscriber=user
                 ))
                 print(f"✅ Unsubscription replicated on {server}")
@@ -190,7 +190,7 @@ def publish_message(topic_name: str, message: str, token: str, background_tasks:
             try:
                 stub = get_grpc_client(server)
                 stub.ReplicateMessage(mom_pb2.ReplicateMessageRequest(
-                    topic_name=topic.name + "_replica",
+                    topic_name=topic_name + "_replica",
                     message=message,
                     subscribers=topic['subscribers']
                 ))
@@ -234,7 +234,7 @@ def delete_one_topic(topic_name: str, token: str):
                 try:
                     stub = get_grpc_client(server)
                     stub.ReplicateTopicDeletion(mom_pb2.ReplicateTopicDeletionRequest(
-                        topic_name=topic.name + "_replica",
+                        topic_name=topic_name + "_replica",
                         owner=client,
                         last_message=message,
                         subscribers=topic['subscribers']
