@@ -297,6 +297,28 @@ class QueueServiceHandler(mom_pb2_grpc.QueueServiceServicer):
             context.set_details(str(e))
             return mom_pb2.Response(message="Queue unsubscription replication failed")
 
+    def ReplicateQueueDeletion(self, request, context):
+        try:
+            queue = find_queue(request.queue_name)
+            if queue:
+                
+                delete_queue(request.queue_name)
+                try:
+                    
+                    path = f"/mom_queues/{request.queue_name}"
+                    if self.zk.exists(path):
+                        self.zk.delete(path)
+                except Exception as e:
+                    print(f"Error deleting queue from ZooKeeper: {e}")
+                    
+                return mom_pb2.Response(message=f"Replicated deletion of queue {request.queue_name}")
+            else:
+                return mom_pb2.Response(message=f"Queue {request.queue_name} not found, nothing to delete")
+        except Exception as e:
+            context.set_code(grpc.StatusCode.INTERNAL)
+            context.set_details(str(e))
+            return mom_pb2.Response(message="Queue deletion replication failed")
+
 
 def serve():
     print("GRPC RUNNING...")

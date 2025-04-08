@@ -231,6 +231,20 @@ def delete_one_queue(queue_name: str, token: str):
         if not queue:
             raise HTTPException(status_code=404, detail="Queue not found")
         if queue["owner"] == client:
+
+            other_servers = ["44.194.117.112:50051", "44.214.10.205:50051", "52.86.105.153:50051"]  # Cambiar dinámicamente
+            for server in other_servers:
+                try:
+                    stub = get_grpc_client(server)
+                    stub.ReplicateQueueDeletion(mom_pb2.ReplicateQueueDeletionRequest(
+                        queue_name=queue_name,
+                        owner=client,
+                        subscribers=queue["subscribers"]
+                    ))
+                    print(f"✅ Queue deletion replicated on {server}")
+                except grpc.RpcError as e:
+                    print(f"⚠️ Failed to replicate queue deletion on {server}: {e.details()}")
+
             delete_queue(queue_name)
             path = f"/mom_queues/{queue_name}"
             if zk.exists(path):
@@ -275,7 +289,7 @@ def unsubscribe_to_queue(queue_name: str, token: str):
                 print(f"✅ Queue unsubscription replicated on {server}")
             except grpc.RpcError as e:
                 print(f"⚠️ Failed to replicate queue unsubscription on {server}: {e.details()}")
-                
+
         return {"message": f"{user} unsubscribed from {queue_name}"}
     
 def get_messages_queue(token: str):

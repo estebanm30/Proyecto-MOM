@@ -505,6 +505,11 @@ class QueueServiceStub(object):
                 request_serializer=mom__pb2.ReplicateQueueUnsubscriptionRequest.SerializeToString,
                 response_deserializer=mom__pb2.Response.FromString,
                 _registered_method=True)
+        self.ReplicateQueueDeletion = channel.unary_unary(
+                '/QueueService/ReplicateQueueDeletion',
+                request_serializer=mom__pb2.ReplicateQueueDeletionRequest.SerializeToString,
+                response_deserializer=mom__pb2.Response.FromString,
+                _registered_method=True)
 
 
 class QueueServiceServicer(object):
@@ -576,6 +581,12 @@ class QueueServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def ReplicateQueueDeletion(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_QueueServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -632,6 +643,11 @@ def add_QueueServiceServicer_to_server(servicer, server):
             'ReplicateQueueUnsubscription': grpc.unary_unary_rpc_method_handler(
                     servicer.ReplicateQueueUnsubscription,
                     request_deserializer=mom__pb2.ReplicateQueueUnsubscriptionRequest.FromString,
+                    response_serializer=mom__pb2.Response.SerializeToString,
+            ),
+            'ReplicateQueueDeletion': grpc.unary_unary_rpc_method_handler(
+                    servicer.ReplicateQueueDeletion,
+                    request_deserializer=mom__pb2.ReplicateQueueDeletionRequest.FromString,
                     response_serializer=mom__pb2.Response.SerializeToString,
             ),
     }
@@ -931,6 +947,33 @@ class QueueService(object):
             target,
             '/QueueService/ReplicateQueueUnsubscription',
             mom__pb2.ReplicateQueueUnsubscriptionRequest.SerializeToString,
+            mom__pb2.Response.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def ReplicateQueueDeletion(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/QueueService/ReplicateQueueDeletion',
+            mom__pb2.ReplicateQueueDeletionRequest.SerializeToString,
             mom__pb2.Response.FromString,
             options,
             channel_credentials,
