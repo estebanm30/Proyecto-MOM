@@ -10,7 +10,8 @@ from controllers.topic_controller import (
 )
 from controllers.queue_controller import subscribe_to_queue, send_message, receive_message, delete_one_queue, unsubscribe_to_queue
 from fastapi import HTTPException, BackgroundTasks
-from zookeeper import get_zk_client
+from zookeeper import get_zk_client, zk, SERVER_ID
+
 
 class MOMService(mom_pb2_grpc.TopicServiceServicer):
     def __init__(self):
@@ -54,10 +55,10 @@ class MOMService(mom_pb2_grpc.TopicServiceServicer):
             context.set_code(grpc.StatusCode.INVALID_ARGUMENT)
             context.set_details(e.detail)
             return mom_pb2.Response(message="Error")
-    
+
     def ReplicateTopic(self, request, context):
         try:
-            if not find_topic(request.topic_name):  
+            if not find_topic(request.topic_name):
                 insert_topic({
                     "name": request.topic_name,
                     "subscribers": [],
@@ -71,7 +72,6 @@ class MOMService(mom_pb2_grpc.TopicServiceServicer):
             context.set_details(str(e))
             return mom_pb2.Response(message="Replication failed")
 
-     
     def ReplicateSubscription(self, request, context):
         try:
             topic = find_topic(request.topic_name)
@@ -90,21 +90,21 @@ class MOMService(mom_pb2_grpc.TopicServiceServicer):
             context.set_details(str(e))
             return mom_pb2.Response(message="Subscription replication failed")
 
-    
     def ReplicateMessage(self, request, context):
         try:
             topic = find_topic(request.topic_name)
             if topic:
-                
+
                 topic['messages'].append(request.message)
-                
-                
+
                 for subscriber in request.subscribers:
                     if subscriber in topic['pending_messages']:
-                        topic['pending_messages'][subscriber].append(request.message)
+                        topic['pending_messages'][subscriber].append(
+                            request.message)
                     else:
-                        topic['pending_messages'][subscriber] = [request.message]
-                
+                        topic['pending_messages'][subscriber] = [
+                            request.message]
+
                 update_topic(request.topic_name, topic)
                 return mom_pb2.Response(message=f"Replicated message in {request.topic_name}")
             else:
@@ -116,7 +116,6 @@ class MOMService(mom_pb2_grpc.TopicServiceServicer):
             context.set_details(str(e))
             return mom_pb2.Response(message="Message replication failed")
 
-    
     def ReplicateUnsubscription(self, request, context):
         try:
             topic = find_topic(request.topic_name)
@@ -135,30 +134,29 @@ class MOMService(mom_pb2_grpc.TopicServiceServicer):
             context.set_details(str(e))
             return mom_pb2.Response(message="Unsubscription replication failed")
 
-
     def ReplicateTopicDeletion(self, request, context):
         try:
             topic = find_topic(request.topic_name)
             if topic:
-                
+
                 topic['messages'].append(request.last_message)
                 for subscriber in request.subscribers:
                     if subscriber in topic['pending_messages']:
-                        topic['pending_messages'][subscriber].append(request.last_message)
-                
+                        topic['pending_messages'][subscriber].append(
+                            request.last_message)
+
                 update_topic(request.topic_name, topic)
-                time.sleep(2)  
-                
-                
+                time.sleep(2)
+
                 delete_topic(request.topic_name)
                 try:
-                    
+
                     path = f"/mom_topics/{request.topic_name}"
                     if zk.exists(path):
                         zk.delete(path)
                 except Exception as e:
                     print(f"Error deleting topic from ZooKeeper: {e}")
-                    
+
                 return mom_pb2.Response(message=f"Replicated deletion of topic {request.topic_name}")
             else:
                 return mom_pb2.Response(message=f"Topic {request.topic_name} not found, nothing to delete")
@@ -218,7 +216,7 @@ class QueueServiceHandler(mom_pb2_grpc.QueueServiceServicer):
 
     def ReplicateQueue(self, request, context):
         try:
-            if not find_queue(request.queue_name):  
+            if not find_queue(request.queue_name):
                 insert_queue({
                     "name": request.queue_name,
                     "subscribers": [],
@@ -226,6 +224,10 @@ class QueueServiceHandler(mom_pb2_grpc.QueueServiceServicer):
                     "pending_messages": {},
                     "owner": request.owner
                 })
+                path = f"/mom_queues_replicas/{request.queue_name}"
+                zk.ensure_path(path)
+                zk.set(path, SERVER_ID.encode())
+
             return mom_pb2.Response(message=f"Replicated queue {request.queue_name}")
         except Exception as e:
             context.set_code(grpc.StatusCode.INTERNAL)
@@ -254,20 +256,21 @@ class QueueServiceHandler(mom_pb2_grpc.QueueServiceServicer):
         try:
             queue = find_queue(request.queue_name)
             if queue:
-                
+
                 if request.subscriber:
                     if request.subscriber in queue['pending_messages']:
-                        queue['pending_messages'][request.subscriber].append(request.message)
+                        queue['pending_messages'][request.subscriber].append(
+                            request.message)
                     else:
-                        queue['pending_messages'][request.subscriber] = [request.message]
+                        queue['pending_messages'][request.subscriber] = [
+                            request.message]
                 else:
-                    
+
                     queue['messages'].append(request.message)
-                
-                
+
                 if request.current_subscriber_idx >= 0:
                     queue['current_subscriber_idx'] = request.current_subscriber_idx
-                
+
                 update_queue(request.queue_name, queue)
                 return mom_pb2.Response(message=f"Replicated message in queue {request.queue_name}")
             else:
@@ -278,7 +281,7 @@ class QueueServiceHandler(mom_pb2_grpc.QueueServiceServicer):
             context.set_code(grpc.StatusCode.INTERNAL)
             context.set_details(str(e))
             return mom_pb2.Response(message="Queue message replication failed")
-        
+
     def ReplicateQueueUnsubscription(self, request, context):
         try:
             queue = find_queue(request.queue_name)
@@ -301,16 +304,16 @@ class QueueServiceHandler(mom_pb2_grpc.QueueServiceServicer):
         try:
             queue = find_queue(request.queue_name)
             if queue:
-                
+
                 delete_queue(request.queue_name)
                 try:
-                    
+
                     path = f"/mom_queues/{request.queue_name}"
                     if self.zk.exists(path):
                         self.zk.delete(path)
                 except Exception as e:
                     print(f"Error deleting queue from ZooKeeper: {e}")
-                    
+
                 return mom_pb2.Response(message=f"Replicated deletion of queue {request.queue_name}")
             else:
                 return mom_pb2.Response(message=f"Queue {request.queue_name} not found, nothing to delete")
@@ -324,9 +327,10 @@ class QueueServiceHandler(mom_pb2_grpc.QueueServiceServicer):
             queue = find_queue(request.queue_name)
             if queue:
                 if request.subscriber in queue['pending_messages']:
-                    
+
                     if request.message in queue['pending_messages'][request.subscriber]:
-                        queue['pending_messages'][request.subscriber].remove(request.message)
+                        queue['pending_messages'][request.subscriber].remove(
+                            request.message)
                         update_queue(request.queue_name, queue)
                 return mom_pb2.Response(message=f"Replicated message deletion from queue {request.queue_name} for {request.subscriber}")
             else:

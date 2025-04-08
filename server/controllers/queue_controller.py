@@ -56,21 +56,24 @@ def create_queue(queue: QueueModel, token: str):
     zk.set(path, SERVER_ID.encode())
 
     replica_server, available_servers = get_round_robin_replica(SERVER_ID)
-    
+
     if replica_server:
         try:
-            print(f"🔁 [REPLICACIÓN] Seleccionado servidor {replica_server} (de disponibles: {available_servers})")
+            print(
+                f"🔁 [REPLICACIÓN] Seleccionado servidor {replica_server} (de disponibles: {available_servers})")
             stub = get_grpc_client(replica_server)
             response = stub.ReplicateQueue(mom_pb2.ReplicateQueueRequest(
-                queue_name=queue.name,
+                queue_name=queue.name + '_replica',
                 owner=client
             ))
-            print(f"✅ [REPLICACIÓN EXITOSA] en {replica_server}: {response.message}")
+            print(
+                f"✅ [REPLICACIÓN EXITOSA] en {replica_server}: {response.message}")
         except grpc.RpcError as e:
-            print(f"⚠️ [REPLICACIÓN FALLIDA] en {replica_server}: {e.details()}")
+            print(
+                f"⚠️ [REPLICACIÓN FALLIDA] en {replica_server}: {e.details()}")
     else:
         print("⚠️ [REPLICACIÓN] No hay servidores disponibles para replicación")
-    
+
     return {"message": f"Queue created in server {SERVER_ID} and replicated in {replica_server if replica_server else 'no server'}"}
 
 
@@ -100,19 +103,20 @@ def subscribe_to_queue(queue_name: str, token: str):
 
         update_queue(queue_name, queue)
 
-
-        other_servers = ["44.194.117.112:50051", "44.214.10.205:50051", "52.86.105.153:50051"]  # Cambiar dinámicamente
+        other_servers = ["44.194.117.112:50051", "44.214.10.205:50051",
+                         "52.86.105.153:50051"]  # Cambiar dinámicamente
         for server in other_servers:
             try:
                 stub = get_grpc_client(server)
                 stub.ReplicateQueueSubscription(mom_pb2.ReplicateQueueSubscriptionRequest(
-                    queue_name=queue_name,
+                    queue_name=queue_name + '_replica',
                     subscriber=user
                 ))
                 print(f"✅ Queue subscription replicated on {server}")
             except grpc.RpcError as e:
-                print(f"⚠️ Failed to replicate queue subscription on {server}: {e.details()}")
-                
+                print(
+                    f"⚠️ Failed to replicate queue subscription on {server}: {e.details()}")
+
         return {"message": f"{user} subscribed to {queue_name}"}
 
 
@@ -150,24 +154,27 @@ def send_message(queue_name: str, message: str, token: str):
 
         update_queue(queue_name, queue)
 
-        other_servers = ["44.194.117.112:50051", "44.214.10.205:50051", "52.86.105.153:50051"]
-        
-        current_server = f"{SERVER_ID.split(':')[0]}:50051"  
+        other_servers = ["44.194.117.112:50051",
+                         "44.214.10.205:50051", "52.86.105.153:50051"]
 
-        servers_to_replicate = [server for server in other_servers if server != current_server]
+        current_server = f"{SERVER_ID.split(':')[0]}:50051"
+
+        servers_to_replicate = [
+            server for server in other_servers if server != current_server]
 
         for server in servers_to_replicate:
             try:
                 stub = get_grpc_client(server)
                 stub.ReplicateQueueMessage(mom_pb2.ReplicateQueueMessageRequest(
-                    queue_name=queue_name,
+                    queue_name=queue_name + '_replica',
                     message=message,
                     subscriber=subscriber,
                     current_subscriber_idx=subscriber_idx
                 ))
                 print(f"✅ Queue message replicated on {server}")
             except grpc.RpcError as e:
-                print(f"⚠️ Failed to replicate queue message on {server}: {e.details()}")
+                print(
+                    f"⚠️ Failed to replicate queue message on {server}: {e.details()}")
 
         return {"message": "Message sent"}
 
@@ -213,20 +220,21 @@ def receive_message(queue_name: str, token: str):
         queue["current_subscriber_idx"] = (
             current_idx + 1) % len(queue["subscribers"])
         update_queue(queue_name, queue)
-        
-        other_servers = ["44.194.117.112:50051", "44.214.10.205:50051", "52.86.105.153:50051"]  # Cambiar dinámicamente
+
+        other_servers = ["44.194.117.112:50051", "44.214.10.205:50051",
+                         "52.86.105.153:50051"]  # Cambiar dinámicamente
         for server in other_servers:
             try:
                 stub = get_grpc_client(server)
                 stub.ReplicateMessageDeletion(mom_pb2.ReplicateMessageDeletionRequest(
-                    queue_name=queue_name,
+                    queue_name=queue_name + '_replica',
                     subscriber=user,
                     message=msg
                 ))
                 print(f"✅ Message deletion replicated on {server}")
             except grpc.RpcError as e:
-                print(f"⚠️ Failed to replicate message deletion on {server}: {e.details()}")
-        
+                print(
+                    f"⚠️ Failed to replicate message deletion on {server}: {e.details()}")
 
         return {"message": msg}
 
@@ -251,18 +259,20 @@ def delete_one_queue(queue_name: str, token: str):
             raise HTTPException(status_code=404, detail="Queue not found")
         if queue["owner"] == client:
 
-            other_servers = ["44.194.117.112:50051", "44.214.10.205:50051", "52.86.105.153:50051"]  # Cambiar dinámicamente
+            other_servers = ["44.194.117.112:50051", "44.214.10.205:50051",
+                             "52.86.105.153:50051"]  # Cambiar dinámicamente
             for server in other_servers:
                 try:
                     stub = get_grpc_client(server)
                     stub.ReplicateQueueDeletion(mom_pb2.ReplicateQueueDeletionRequest(
-                        queue_name=queue_name,
+                        queue_name=queue_name + '_replica',
                         owner=client,
                         subscribers=queue["subscribers"]
                     ))
                     print(f"✅ Queue deletion replicated on {server}")
                 except grpc.RpcError as e:
-                    print(f"⚠️ Failed to replicate queue deletion on {server}: {e.details()}")
+                    print(
+                        f"⚠️ Failed to replicate queue deletion on {server}: {e.details()}")
 
             delete_queue(queue_name)
             path = f"/mom_queues/{queue_name}"
@@ -272,7 +282,7 @@ def delete_one_queue(queue_name: str, token: str):
         else:
             return {"message": "You cannot delete this queue"}
 
-    
+
 def unsubscribe_to_queue(queue_name: str, token: str):
     verify_token(token)
     server_redirect = check_redirect_queues(queue_name)
@@ -297,20 +307,23 @@ def unsubscribe_to_queue(queue_name: str, token: str):
         queue["subscribers"].remove(user)
         update_queue(queue_name, queue)
 
-        other_servers = ["44.194.117.112:50051", "44.214.10.205:50051", "52.86.105.153:50051"]  # Cambiar dinámicamente
+        other_servers = ["44.194.117.112:50051", "44.214.10.205:50051",
+                         "52.86.105.153:50051"]  # Cambiar dinámicamente
         for server in other_servers:
             try:
                 stub = get_grpc_client(server)
                 stub.ReplicateQueueUnsubscription(mom_pb2.ReplicateQueueUnsubscriptionRequest(
-                    queue_name=queue_name,
+                    queue_name=queue_name + '_replica',
                     subscriber=user
                 ))
                 print(f"✅ Queue unsubscription replicated on {server}")
             except grpc.RpcError as e:
-                print(f"⚠️ Failed to replicate queue unsubscription on {server}: {e.details()}")
+                print(
+                    f"⚠️ Failed to replicate queue unsubscription on {server}: {e.details()}")
 
         return {"message": f"{user} unsubscribed from {queue_name}"}
-    
+
+
 def get_messages_queue(token: str):
     verify_token(token)
     user = get_token_children(token)
