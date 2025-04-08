@@ -121,6 +121,9 @@ try:
                                                      params={"queue_name": queue_name, "message": message, "token": token})
                             print("\033c", end="")
                             print(server_address, "server selected")
+                            if response.status_code == 500:
+                                response = requests.post(f"http://{server_address}/queue/send/",
+                                                         params={"queue_name": queue_name + '_replica', "message": message, "token": token})
                             print(colored(response.json(), "yellow"))
 
                         elif option == "3":
@@ -133,6 +136,9 @@ try:
                                                     params={"queue_name": queue_name, "token": token})
                             print("\033c", end="")
                             print(server_address, "server selected")
+                            if response.status_code == 500:
+                                response = requests.get(f"http://{server_address}/queue/receive/",
+                                                        params={"queue_name": queue_name + '_replica', "token": token})
                             print(colored(response.json(), "green"))
 
                         elif option == "4":
@@ -144,6 +150,9 @@ try:
                             response = requests.delete(f"http://{server_address}/queue/",
                                                        params={"queue_name": queue_name, "token": token})
                             print("\033c", end="")
+                            if response.status_code == 500:
+                                response = requests.delete(f"http://{server_address}/queue/",
+                                                           params={"queue_name": queue_name + '_replica', "token": token})
                             print(colored(response.json(), "yellow"))
 
                         elif option == "5":
@@ -155,6 +164,9 @@ try:
                             response = requests.put(f"http://{server_address}/queue/subscribe/",
                                                     params={"queue_name": queue_name, "token": token})
                             print("\033c", end="")
+                            if response.status_code == 500:
+                                response = requests.put(f"http://{server_address}/queue/subscribe/",
+                                                        params={"queue_name": queue_name + '_replica', "token": token})
                             print(colored(response.json(), "yellow"))
 
                         elif option == "6":
@@ -166,6 +178,9 @@ try:
                             response = requests.put(f"http://{server_address}/queue/unsubscribe/",
                                                     params={"queue_name": queue_name, "token": token})
                             print("\033c", end="")
+                            if response.status_code == 500:
+                                response = requests.put(f"http://{server_address}/queue/unsubscribe/",
+                                                        params={"queue_name": queue_name + '_replica', "token": token})
                             print(colored(response.json(), "yellow"))
 
                         elif option == "7":
