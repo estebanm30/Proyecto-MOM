@@ -173,9 +173,15 @@ def publish_message(topic_name: str, message: str, token: str, background_tasks:
 
         update_topic(topic_name, topic)
 
-        other_servers = ["44.194.117.112:50051", "44.214.10.205:50051", "52.86.105.153:50051"] # Cambiar dinámicamente
+        other_servers = ["44.194.117.112:50051", "44.214.10.205:50051", "52.86.105.153:50051"]
         
-        for server in other_servers:
+        
+        current_server = f"{SERVER_ID.split(':')[0]}:50051"  
+        
+        
+        servers_to_replicate = [server for server in other_servers if server != current_server]
+
+        for server in servers_to_replicate:
             try:
                 stub = get_grpc_client(server)
                 stub.ReplicateMessage(mom_pb2.ReplicateMessageRequest(
