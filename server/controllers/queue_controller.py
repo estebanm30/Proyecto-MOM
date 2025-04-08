@@ -149,6 +149,21 @@ def send_message(queue_name: str, message: str, token: str):
                 subscriber_idx + 1) % len(queue["subscribers"])
 
         update_queue(queue_name, queue)
+
+        other_servers = ["44.194.117.112:50051", "44.214.10.205:50051", "52.86.105.153:50051"]  # Cambiar dinámicamente
+        for server in other_servers:
+            try:
+                stub = get_grpc_client(server)
+                stub.ReplicateQueueMessage(mom_pb2.ReplicateQueueMessageRequest(
+                    queue_name=queue_name,
+                    message=message,
+                    subscriber=subscriber if subscriber else "",
+                    current_subscriber_idx=current_idx
+                ))
+                print(f"✅ Queue message replicated on {server}")
+            except grpc.RpcError as e:
+                print(f"⚠️ Failed to replicate queue message on {server}: {e.details()}")
+                
         return {"message": "Message sent"}
 
 
