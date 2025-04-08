@@ -134,6 +134,8 @@ def send_message(queue_name: str, message: str, token: str):
             raise HTTPException(
                 status_code=500, detail="gRPC error: " + e.details())
     else:
+        subscriber = None
+        subscriber_idx = None
         queue = find_queue(queue_name)
         if not queue:
             raise HTTPException(status_code=404, detail="Queue not found")

@@ -256,7 +256,6 @@ class QueueServiceHandler(mom_pb2_grpc.QueueServiceServicer):
         try:
             queue = find_queue(request.queue_name)
             if queue:
-
                 if request.subscriber:
                     if request.subscriber in queue['pending_messages']:
                         queue['pending_messages'][request.subscriber].append(
@@ -265,12 +264,10 @@ class QueueServiceHandler(mom_pb2_grpc.QueueServiceServicer):
                         queue['pending_messages'][request.subscriber] = [
                             request.message]
                 else:
-
                     queue['messages'].append(request.message)
 
                 if request.current_subscriber_idx >= 0:
                     queue['current_subscriber_idx'] = request.current_subscriber_idx
-
                 update_queue(request.queue_name, queue)
                 return mom_pb2.Response(message=f"Replicated message in queue {request.queue_name}")
             else:
