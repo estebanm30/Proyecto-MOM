@@ -3,7 +3,7 @@ import requests
 from database import insert_queue, find_queue, find_all_queues, update_queue, delete_queue
 from models import QueueModel
 from utils import verify_token, check_redirect_queues
-from zookeeper import zk, SERVER_ID, get_tokens, get_token_children
+from zookeeper import zk, SERVER_ID, get_tokens, get_token_children, get_round_robin_replica
 import mom_pb2
 import mom_pb2_grpc
 import grpc
@@ -36,15 +36,42 @@ def create_queue(queue: QueueModel, token: str):
     if find_queue(queue.name):
         raise HTTPException(status_code=400, detail="Queue already exists")
 
-    insert_queue({"name": queue.name, "subscribers": [],
-                 "messages": [], "pending_messages": {}, "owner": client})
+    queue_data = {
+        "name": queue.name,
+        "subscribers": [],
+        "messages": [],
+        "pending_messages": {},
+        "owner": client
+    }
+
+    try:
+        insert_queue(queue_data)
+        print(f"✅ Queue created LOCALLY on {SERVER_ID}")
+    except Exception as e:
+        print(f"⛔ Failed to create queue locally: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to create queue")
 
     path = f"/mom_queues/{queue.name}"
     zk.ensure_path(path)
     zk.set(path, SERVER_ID.encode())
 
-    print(list(find_all_queues()))
-    return {"message": "Queue created"}
+    replica_server, available_servers = get_round_robin_replica(SERVER_ID)
+    
+    if replica_server:
+        try:
+            print(f"🔁 [REPLICACIÓN] Seleccionado servidor {replica_server} (de disponibles: {available_servers})")
+            stub = get_grpc_client(replica_server)
+            response = stub.ReplicateQueue(mom_pb2.ReplicateQueueRequest(
+                queue_name=queue.name,
+                owner=client
+            ))
+            print(f"✅ [REPLICACIÓN EXITOSA] en {replica_server}: {response.message}")
+        except grpc.RpcError as e:
+            print(f"⚠️ [REPLICACIÓN FALLIDA] en {replica_server}: {e.details()}")
+    else:
+        print("⚠️ [REPLICACIÓN] No hay servidores disponibles para replicación")
+    
+    return {"message": f"Queue created in server {SERVER_ID} and replicated in {replica_server if replica_server else 'no server'}"}
 
 
 def subscribe_to_queue(queue_name: str, token: str):

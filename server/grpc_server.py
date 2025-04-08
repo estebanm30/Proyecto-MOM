@@ -216,6 +216,22 @@ class QueueServiceHandler(mom_pb2_grpc.QueueServiceServicer):
             context.set_details(e.detail)
             return mom_pb2.Response(message="Error")
 
+    def ReplicateQueue(self, request, context):
+        try:
+            if not find_queue(request.queue_name):  
+                insert_queue({
+                    "name": request.queue_name,
+                    "subscribers": [],
+                    "messages": [],
+                    "pending_messages": {},
+                    "owner": request.owner
+                })
+            return mom_pb2.Response(message=f"Replicated queue {request.queue_name}")
+        except Exception as e:
+            context.set_code(grpc.StatusCode.INTERNAL)
+            context.set_details(str(e))
+            return mom_pb2.Response(message="Queue replication failed")
+
 
 def serve():
     print("GRPC RUNNING...")
