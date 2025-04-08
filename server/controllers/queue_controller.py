@@ -104,8 +104,8 @@ def subscribe_to_queue(queue_name: str, token: str):
         update_queue(queue_name, queue)
 
         other_servers = get_queue_server(queue_name + '_replica')
-        for server in other_servers:
-            server = f"{server[:server.find(':')]}:50051"
+        for i in range(len(other_servers)):
+            other_servers[i] = f"{other_servers[i][:other_servers[i].find(':')]}:50051"
 
         for server in other_servers:
             try:
@@ -159,8 +159,8 @@ def send_message(queue_name: str, message: str, token: str):
         update_queue(queue_name, queue)
 
         other_servers = get_queue_server(queue_name + '_replica')
-        for server in other_servers:
-            server = f"{server[:server.find(':')]}:50051"
+        for i in range(len(other_servers)):
+            other_servers[i] = f"{other_servers[i][:other_servers[i].find(':')]}:50051"
 
         current_server = f"{SERVER_ID.split(':')[0]}:50051"
 
@@ -227,8 +227,8 @@ def receive_message(queue_name: str, token: str):
         update_queue(queue_name, queue)
 
         other_servers = get_queue_server(queue_name + '_replica')
-        for server in other_servers:
-            server = f"{server[:server.find(':')]}:50051"
+        for i in range(len(other_servers)):
+            other_servers[i] = f"{other_servers[i][:other_servers[i].find(':')]}:50051"
 
         for server in other_servers:
             try:
@@ -267,8 +267,8 @@ def delete_one_queue(queue_name: str, token: str):
         if queue["owner"] == client:
 
             other_servers = get_queue_server(queue_name + '_replica')
-            for server in other_servers:
-                server = f"{server[:server.find(':')]}:50051"
+            for i in range(len(other_servers)):
+                other_servers[i] = f"{other_servers[i][:other_servers[i].find(':')]}:50051"
             for server in other_servers:
                 try:
                     stub = get_grpc_client(server)
@@ -316,9 +316,9 @@ def unsubscribe_to_queue(queue_name: str, token: str):
         update_queue(queue_name, queue)
 
         other_servers = get_queue_server(queue_name + '_replica')
-        for server in other_servers:
-            server = f"{server[:server.find(':')]}:50051"
-            
+        for i in range(len(other_servers)):
+            other_servers[i] = f"{other_servers[i][:other_servers[i].find(':')]}:50051"
+
         for server in other_servers:
             try:
                 stub = get_grpc_client(server)
