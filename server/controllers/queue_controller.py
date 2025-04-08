@@ -99,6 +99,20 @@ def subscribe_to_queue(queue_name: str, token: str):
             queue["pending_messages"][user] = []
 
         update_queue(queue_name, queue)
+
+
+        other_servers = ["44.194.117.112:50051", "44.214.10.205:50051", "52.86.105.153:50051"]  # Cambiar dinámicamente
+        for server in other_servers:
+            try:
+                stub = get_grpc_client(server)
+                stub.ReplicateQueueSubscription(mom_pb2.ReplicateQueueSubscriptionRequest(
+                    queue_name=queue_name,
+                    subscriber=user
+                ))
+                print(f"✅ Queue subscription replicated on {server}")
+            except grpc.RpcError as e:
+                print(f"⚠️ Failed to replicate queue subscription on {server}: {e.details()}")
+                
         return {"message": f"{user} subscribed to {queue_name}"}
 
 

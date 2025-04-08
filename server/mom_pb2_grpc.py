@@ -490,6 +490,11 @@ class QueueServiceStub(object):
                 request_serializer=mom__pb2.ReplicateQueueRequest.SerializeToString,
                 response_deserializer=mom__pb2.Response.FromString,
                 _registered_method=True)
+        self.ReplicateQueueSubscription = channel.unary_unary(
+                '/QueueService/ReplicateQueueSubscription',
+                request_serializer=mom__pb2.ReplicateQueueSubscriptionRequest.SerializeToString,
+                response_deserializer=mom__pb2.Response.FromString,
+                _registered_method=True)
 
 
 class QueueServiceServicer(object):
@@ -543,6 +548,12 @@ class QueueServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def ReplicateQueueSubscription(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_QueueServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -584,6 +595,11 @@ def add_QueueServiceServicer_to_server(servicer, server):
             'ReplicateQueue': grpc.unary_unary_rpc_method_handler(
                     servicer.ReplicateQueue,
                     request_deserializer=mom__pb2.ReplicateQueueRequest.FromString,
+                    response_serializer=mom__pb2.Response.SerializeToString,
+            ),
+            'ReplicateQueueSubscription': grpc.unary_unary_rpc_method_handler(
+                    servicer.ReplicateQueueSubscription,
+                    request_deserializer=mom__pb2.ReplicateQueueSubscriptionRequest.FromString,
                     response_serializer=mom__pb2.Response.SerializeToString,
             ),
     }
@@ -802,6 +818,33 @@ class QueueService(object):
             target,
             '/QueueService/ReplicateQueue',
             mom__pb2.ReplicateQueueRequest.SerializeToString,
+            mom__pb2.Response.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def ReplicateQueueSubscription(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/QueueService/ReplicateQueueSubscription',
+            mom__pb2.ReplicateQueueSubscriptionRequest.SerializeToString,
             mom__pb2.Response.FromString,
             options,
             channel_credentials,
