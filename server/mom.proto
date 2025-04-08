@@ -24,6 +24,7 @@ service QueueService {
     rpc ReplicateQueue (ReplicateQueueRequest) returns (Response);
     rpc ReplicateQueueSubscription (ReplicateQueueSubscriptionRequest) returns (Response);
     rpc ReplicateQueueMessage (ReplicateQueueMessageRequest) returns (Response);
+    rpc ReplicateQueueUnsubscription (ReplicateQueueUnsubscriptionRequest) returns (Response);
 }
 
 message SubscriptionRequest {
@@ -117,4 +118,9 @@ message ReplicateQueueMessageRequest {
     string message = 2;
     string subscriber = 3;  
     int32 current_subscriber_idx = 4;  
+}
+
+message ReplicateQueueUnsubscriptionRequest {
+    string queue_name = 1;
+    string subscriber = 2;
 }

@@ -263,6 +263,19 @@ def unsubscribe_to_queue(queue_name: str, token: str):
                 status_code=403, detail="Not subscribed to this queue")
         queue["subscribers"].remove(user)
         update_queue(queue_name, queue)
+
+        other_servers = ["44.194.117.112:50051", "44.214.10.205:50051", "52.86.105.153:50051"]  # Cambiar dinámicamente
+        for server in other_servers:
+            try:
+                stub = get_grpc_client(server)
+                stub.ReplicateQueueUnsubscription(mom_pb2.ReplicateQueueUnsubscriptionRequest(
+                    queue_name=queue_name,
+                    subscriber=user
+                ))
+                print(f"✅ Queue unsubscription replicated on {server}")
+            except grpc.RpcError as e:
+                print(f"⚠️ Failed to replicate queue unsubscription on {server}: {e.details()}")
+                
         return {"message": f"{user} unsubscribed from {queue_name}"}
     
 def get_messages_queue(token: str):

@@ -278,6 +278,24 @@ class QueueServiceHandler(mom_pb2_grpc.QueueServiceServicer):
             context.set_code(grpc.StatusCode.INTERNAL)
             context.set_details(str(e))
             return mom_pb2.Response(message="Queue message replication failed")
+        
+    def ReplicateQueueUnsubscription(self, request, context):
+        try:
+            queue = find_queue(request.queue_name)
+            if queue:
+                if request.subscriber in queue['subscribers']:
+                    queue['subscribers'].remove(request.subscriber)
+                    queue['pending_messages'].pop(request.subscriber, None)
+                    update_queue(request.queue_name, queue)
+                return mom_pb2.Response(message=f"Replicated unsubscription from queue {request.queue_name} for {request.subscriber}")
+            else:
+                context.set_code(grpc.StatusCode.NOT_FOUND)
+                context.set_details("Queue not found")
+                return mom_pb2.Response(message="Queue not found")
+        except Exception as e:
+            context.set_code(grpc.StatusCode.INTERNAL)
+            context.set_details(str(e))
+            return mom_pb2.Response(message="Queue unsubscription replication failed")
 
 
 def serve():
