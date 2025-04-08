@@ -208,7 +208,7 @@ def receive_message(queue_name: str, token: str):
         queue["current_subscriber_idx"] = (
             current_idx + 1) % len(queue["subscribers"])
         update_queue(queue_name, queue)
-
+        """
         other_servers = ["44.194.117.112:50051", "44.214.10.205:50051", "52.86.105.153:50051"]  # Cambiar dinámicamente
         for server in other_servers:
             try:
@@ -221,9 +221,7 @@ def receive_message(queue_name: str, token: str):
                 print(f"✅ Message deletion replicated on {server}")
             except grpc.RpcError as e:
                 print(f"⚠️ Failed to replicate message deletion on {server}: {e.details()}")
-
-        queue["current_subscriber_idx"] = (
-            current_idx + 1) % len(queue["subscribers"])
+        """
 
         return {"message": msg}
 
@@ -328,5 +326,17 @@ def get_messages_queue(token: str):
         if cont == 0:
             queue['messages'] = []
             update_queue(queue['name'], queue)
+            other_servers = ["44.194.117.112:50051", "44.214.10.205:50051", "52.86.105.153:50051"]  # Cambiar dinámicamente
+            for server in other_servers:
+                try:
+                    stub = get_grpc_client(server)
+                    stub.ReplicateMessageDeletion(mom_pb2.ReplicateMessageDeletionRequest(
+                        queue_name=queue_name,
+                        subscriber=user,
+                        message=msg
+                    ))
+                    print(f"✅ Message deletion replicated on {server}")
+                except grpc.RpcError as e:
+                    print(f"⚠️ Failed to replicate message deletion on {server}: {e.details()}")
 
     return {"messages": messages}
