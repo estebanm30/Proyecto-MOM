@@ -30,6 +30,9 @@ def get_topic_server(topic_name: str):
     path = f"/mom_topics/{topic_name}"
     if zk.exists(path):
         return zk.get(path)[0].decode()
+    path = f"/mom_topics_replicas/{topic_name}"
+    if zk.exists(path):
+        return zk.get(path)[0].decode()
     return None
 
 

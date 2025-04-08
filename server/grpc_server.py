@@ -66,6 +66,10 @@ class MOMService(mom_pb2_grpc.TopicServiceServicer):
                     "pending_messages": {},
                     "owner": request.owner
                 })
+                path = f"/mom_topics_replicas/{request.topic_name}"
+                zk.ensure_path(path)
+                zk.set(path, SERVER_ID.encode())
+
             return mom_pb2.Response(message=f"Replicated topic {request.topic_name}")
         except Exception as e:
             context.set_code(grpc.StatusCode.INTERNAL)
@@ -151,7 +155,7 @@ class MOMService(mom_pb2_grpc.TopicServiceServicer):
                 delete_topic(request.topic_name)
                 try:
 
-                    path = f"/mom_topics/{request.topic_name}"
+                    path = f"/mom_topics_replicas/{request.topic_name}"
                     if zk.exists(path):
                         zk.delete(path)
                 except Exception as e:
@@ -304,8 +308,7 @@ class QueueServiceHandler(mom_pb2_grpc.QueueServiceServicer):
 
                 delete_queue(request.queue_name)
                 try:
-
-                    path = f"/mom_queues/{request.queue_name}"
+                    path = f"/mom_queues_replicas/{request.queue_name}"
                     if zk.exists(path):
                         zk.delete(path)
                 except Exception as e:

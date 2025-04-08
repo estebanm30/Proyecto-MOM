@@ -9,7 +9,6 @@ import mom_pb2
 import mom_pb2_grpc
 
 
-
 def get_topics(token: str):
     verify_token(token)
     topics = find_all_topics()
@@ -45,21 +44,24 @@ def create_topic(topic: TopicModel, token: str):
     zk.set(path, SERVER_ID.encode())
 
     replica_server, available_servers = get_round_robin_replica(SERVER_ID)
-    
+
     if replica_server:
         try:
-            print(f"🔁 [REPLICACIÓN] Seleccionado servidor {replica_server} (de disponibles: {available_servers})")
+            print(
+                f"🔁 [REPLICACIÓN] Seleccionado servidor {replica_server} (de disponibles: {available_servers})")
             stub = get_grpc_client(replica_server)
             response = stub.ReplicateTopic(mom_pb2.ReplicateTopicRequest(
-                topic_name=topic.name,
+                topic_name=topic.name + "_replica",
                 owner=client
             ))
-            print(f"✅ [REPLICACIÓN EXITOSA] en {replica_server}: {response.message}")
+            print(
+                f"✅ [REPLICACIÓN EXITOSA] en {replica_server}: {response.message}")
         except grpc.RpcError as e:
-            print(f"⚠️ [REPLICACIÓN FALLIDA] en {replica_server}: {e.details()}")
+            print(
+                f"⚠️ [REPLICACIÓN FALLIDA] en {replica_server}: {e.details()}")
     else:
         print("⚠️ [REPLICACIÓN] No hay servidores disponibles para replicación")
-    
+
     return {"message": f"Tópico creado en servidor {SERVER_ID} y replicado en {replica_server if replica_server else 'ningún servidor'}"}
 
 
@@ -94,19 +96,20 @@ def subscribe_to_topic(topic_name: str, token: str):
             topic['pending_messages'][user] = []
 
         update_topic(topic_name, topic)
-        other_servers = ["44.194.117.112:50051", "44.214.10.205:50051", "52.86.105.153:50051"] # Cambiar dinamicamente
+        other_servers = ["44.194.117.112:50051", "44.214.10.205:50051",
+                         "52.86.105.153:50051"]  # Cambiar dinamicamente
         for server in other_servers:
             try:
                 stub = get_grpc_client(server)
                 stub.ReplicateSubscription(mom_pb2.ReplicateSubscriptionRequest(
-                    topic_name=topic_name,
+                    topic_name=topic.name + "_replica",
                     subscriber=user
                 ))
                 print(f"✅ Subscription replicated on {server}")
             except grpc.RpcError as e:
-                print(f"⚠️ Failed to replicate subscription on {server}: {e.details()}")
+                print(
+                    f"⚠️ Failed to replicate subscription on {server}: {e.details()}")
 
-        
         return {"message": f"{user} subscribed to {topic_name}"}
 
 
@@ -135,17 +138,19 @@ def unsubscribe_from_topic(topic_name: str, token: str):
             topic['pending_messages'].pop(user, None)
         update_topic(topic_name, topic)
 
-        other_servers = ["44.194.117.112:50051", "44.214.10.205:50051", "52.86.105.153:50051"] # Cambiar dinamicamente
+        other_servers = ["44.194.117.112:50051", "44.214.10.205:50051",
+                         "52.86.105.153:50051"]  # Cambiar dinamicamente
         for server in other_servers:
             try:
                 stub = get_grpc_client(server)
                 stub.ReplicateUnsubscription(mom_pb2.ReplicateUnsubscriptionRequest(
-                    topic_name=topic_name,
+                    topic_name=topic.name + "_replica",
                     subscriber=user
                 ))
                 print(f"✅ Unsubscription replicated on {server}")
             except grpc.RpcError as e:
-                print(f"⚠️ Failed to replicate unsubscription on {server}: {e.details()}")
+                print(
+                    f"⚠️ Failed to replicate unsubscription on {server}: {e.details()}")
         return {"message": f"{user} unsubscribed from {topic_name}"}
 
 
@@ -173,25 +178,26 @@ def publish_message(topic_name: str, message: str, token: str, background_tasks:
 
         update_topic(topic_name, topic)
 
-        other_servers = ["44.194.117.112:50051", "44.214.10.205:50051", "52.86.105.153:50051"]
-        
-        
-        current_server = f"{SERVER_ID.split(':')[0]}:50051"  
-        
-        
-        servers_to_replicate = [server for server in other_servers if server != current_server]
+        other_servers = ["44.194.117.112:50051",
+                         "44.214.10.205:50051", "52.86.105.153:50051"]
+
+        current_server = f"{SERVER_ID.split(':')[0]}:50051"
+
+        servers_to_replicate = [
+            server for server in other_servers if server != current_server]
 
         for server in servers_to_replicate:
             try:
                 stub = get_grpc_client(server)
                 stub.ReplicateMessage(mom_pb2.ReplicateMessageRequest(
-                    topic_name=topic_name,
+                    topic_name=topic.name + "_replica",
                     message=message,
                     subscribers=topic['subscribers']
                 ))
                 print(f"✅ Message replicated on {server}")
             except grpc.RpcError as e:
-                print(f"⚠️ Failed to replicate message on {server}: {e.details()}")
+                print(
+                    f"⚠️ Failed to replicate message on {server}: {e.details()}")
 
         return {"message": f"Message published to {len(topic['subscribers'])} subscribers"}
 
@@ -221,20 +227,22 @@ def delete_one_topic(topic_name: str, token: str):
                 topic['pending_messages'][subscriber].append(message)
             update_topic(topic_name, topic)
 
-            other_servers = ["44.194.117.112:50051", "44.214.10.205:50051", "52.86.105.153:50051"] # Cambiar dinámicamente
-            
+            other_servers = ["44.194.117.112:50051", "44.214.10.205:50051",
+                             "52.86.105.153:50051"]  # Cambiar dinámicamente
+
             for server in other_servers:
                 try:
                     stub = get_grpc_client(server)
                     stub.ReplicateTopicDeletion(mom_pb2.ReplicateTopicDeletionRequest(
-                        topic_name=topic_name,
+                        topic_name=topic.name + "_replica",
                         owner=client,
                         last_message=message,
                         subscribers=topic['subscribers']
                     ))
                     print(f"✅ Topic deletion replicated on {server}")
                 except grpc.RpcError as e:
-                    print(f"⚠️ Failed to replicate topic deletion on {server}: {e.details()}")
+                    print(
+                        f"⚠️ Failed to replicate topic deletion on {server}: {e.details()}")
 
             time.sleep(2)
             delete_topic(topic_name)
