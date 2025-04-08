@@ -26,6 +26,7 @@ service QueueService {
     rpc ReplicateQueueMessage (ReplicateQueueMessageRequest) returns (Response);
     rpc ReplicateQueueUnsubscription (ReplicateQueueUnsubscriptionRequest) returns (Response);
     rpc ReplicateQueueDeletion (ReplicateQueueDeletionRequest) returns (Response);
+    rpc ReplicateMessageDeletion (ReplicateMessageDeletionRequest) returns (Response);
 }
 
 message SubscriptionRequest {
@@ -130,4 +131,10 @@ message ReplicateQueueDeletionRequest {
     string queue_name = 1;
     string owner = 2;
     repeated string subscribers = 3;
+}
+
+message ReplicateMessageDeletionRequest {
+    string queue_name = 1;
+    string subscriber = 2;
+    string message = 3;
 }

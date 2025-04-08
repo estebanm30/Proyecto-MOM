@@ -319,6 +319,23 @@ class QueueServiceHandler(mom_pb2_grpc.QueueServiceServicer):
             context.set_details(str(e))
             return mom_pb2.Response(message="Queue deletion replication failed")
 
+    def ReplicateMessageDeletion(self, request, context):
+        try:
+            queue = find_queue(request.queue_name)
+            if queue:
+                if request.subscriber in queue['pending_messages']:
+                    
+                    if request.message in queue['pending_messages'][request.subscriber]:
+                        queue['pending_messages'][request.subscriber].remove(request.message)
+                        update_queue(request.queue_name, queue)
+                return mom_pb2.Response(message=f"Replicated message deletion from queue {request.queue_name} for {request.subscriber}")
+            else:
+                return mom_pb2.Response(message=f"Queue {request.queue_name} not found")
+        except Exception as e:
+            context.set_code(grpc.StatusCode.INTERNAL)
+            context.set_details(str(e))
+            return mom_pb2.Response(message="Message deletion replication failed")
+
 
 def serve():
     print("GRPC RUNNING...")
