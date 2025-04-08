@@ -153,7 +153,7 @@ def send_message(queue_name: str, message: str, token: str):
         other_servers = ["44.194.117.112:50051", "44.214.10.205:50051", "52.86.105.153:50051"]
         
         current_server = f"{SERVER_ID.split(':')[0]}:50051"  
-               
+
         servers_to_replicate = [server for server in other_servers if server != current_server]
 
         for server in servers_to_replicate:
@@ -162,7 +162,7 @@ def send_message(queue_name: str, message: str, token: str):
                 stub.ReplicateQueueMessage(mom_pb2.ReplicateQueueMessageRequest(
                     queue_name=queue_name,
                     message=message,
-                    subscriber=subscriber if subscriber else "",
+                    subscriber=subscriber,
                     current_subscriber_idx=subscriber_idx
                 ))
                 print(f"✅ Queue message replicated on {server}")
