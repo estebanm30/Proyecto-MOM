@@ -150,8 +150,13 @@ def send_message(queue_name: str, message: str, token: str):
 
         update_queue(queue_name, queue)
 
-        other_servers = ["44.194.117.112:50051", "44.214.10.205:50051", "52.86.105.153:50051"]  # Cambiar dinámicamente
-        for server in other_servers:
+        other_servers = ["44.194.117.112:50051", "44.214.10.205:50051", "52.86.105.153:50051"]
+        
+        current_server = f"{SERVER_ID.split(':')[0]}:50051"  
+               
+        servers_to_replicate = [server for server in other_servers if server != current_server]
+
+        for server in servers_to_replicate:
             try:
                 stub = get_grpc_client(server)
                 stub.ReplicateQueueMessage(mom_pb2.ReplicateQueueMessageRequest(
@@ -208,7 +213,7 @@ def receive_message(queue_name: str, token: str):
         queue["current_subscriber_idx"] = (
             current_idx + 1) % len(queue["subscribers"])
         update_queue(queue_name, queue)
-        """
+        
         other_servers = ["44.194.117.112:50051", "44.214.10.205:50051", "52.86.105.153:50051"]  # Cambiar dinámicamente
         for server in other_servers:
             try:
@@ -221,7 +226,7 @@ def receive_message(queue_name: str, token: str):
                 print(f"✅ Message deletion replicated on {server}")
             except grpc.RpcError as e:
                 print(f"⚠️ Failed to replicate message deletion on {server}: {e.details()}")
-        """
+        
 
         return {"message": msg}
 
@@ -326,6 +331,9 @@ def get_messages_queue(token: str):
         if cont == 0:
             queue['messages'] = []
             update_queue(queue['name'], queue)
+            """
+            #Va acá o en receive_message?
+            
             other_servers = ["44.194.117.112:50051", "44.214.10.205:50051", "52.86.105.153:50051"]  # Cambiar dinámicamente
             for server in other_servers:
                 try:
@@ -338,5 +346,5 @@ def get_messages_queue(token: str):
                     print(f"✅ Message deletion replicated on {server}")
                 except grpc.RpcError as e:
                     print(f"⚠️ Failed to replicate message deletion on {server}: {e.details()}")
-
+            """
     return {"messages": messages}
