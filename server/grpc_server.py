@@ -4,7 +4,7 @@ import time
 import mom_pb2
 import mom_pb2_grpc
 import threading
-from database import insert_topic, find_all_topics, find_topic, update_topic, delete_topic, find_queue, insert_queue
+from database import insert_topic, find_all_topics, find_topic, update_topic, delete_topic, find_queue, insert_queue, update_queue, delete_queue, find_all_queues
 from controllers.topic_controller import (
     publish_message, subscribe_to_topic, unsubscribe_from_topic, delete_one_topic
 )
