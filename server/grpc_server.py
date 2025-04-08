@@ -306,8 +306,8 @@ class QueueServiceHandler(mom_pb2_grpc.QueueServiceServicer):
                 try:
 
                     path = f"/mom_queues/{request.queue_name}"
-                    if self.zk.exists(path):
-                        self.zk.delete(path)
+                    if zk.exists(path):
+                        zk.delete(path)
                 except Exception as e:
                     print(f"Error deleting queue from ZooKeeper: {e}")
 

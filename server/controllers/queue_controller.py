@@ -3,7 +3,7 @@ import requests
 from database import insert_queue, find_queue, find_all_queues, update_queue, delete_queue
 from models import QueueModel
 from utils import verify_token, check_redirect_queues
-from zookeeper import zk, SERVER_ID, get_tokens, get_token_children, get_round_robin_replica
+from zookeeper import zk, SERVER_ID, get_tokens, get_token_children, get_round_robin_replica, get_queue_server
 import mom_pb2
 import mom_pb2_grpc
 import grpc
@@ -103,8 +103,10 @@ def subscribe_to_queue(queue_name: str, token: str):
 
         update_queue(queue_name, queue)
 
-        other_servers = ["44.194.117.112:50051", "44.214.10.205:50051",
-                         "52.86.105.153:50051"]  # Cambiar dinámicamente
+        other_servers = get_queue_server(queue_name + '_replica')
+        for server in other_servers:
+            server = f"{server[:server.find(':')]}:50051"
+
         for server in other_servers:
             try:
                 stub = get_grpc_client(server)
@@ -156,8 +158,9 @@ def send_message(queue_name: str, message: str, token: str):
 
         update_queue(queue_name, queue)
 
-        other_servers = ["44.194.117.112:50051",
-                         "44.214.10.205:50051", "52.86.105.153:50051"]
+        other_servers = get_queue_server(queue_name + '_replica')
+        for server in other_servers:
+            server = f"{server[:server.find(':')]}:50051"
 
         current_server = f"{SERVER_ID.split(':')[0]}:50051"
 
@@ -223,8 +226,10 @@ def receive_message(queue_name: str, token: str):
             current_idx + 1) % len(queue["subscribers"])
         update_queue(queue_name, queue)
 
-        other_servers = ["44.194.117.112:50051", "44.214.10.205:50051",
-                         "52.86.105.153:50051"]  # Cambiar dinámicamente
+        other_servers = get_queue_server(queue_name + '_replica')
+        for server in other_servers:
+            server = f"{server[:server.find(':')]}:50051"
+
         for server in other_servers:
             try:
                 stub = get_grpc_client(server)
@@ -261,8 +266,9 @@ def delete_one_queue(queue_name: str, token: str):
             raise HTTPException(status_code=404, detail="Queue not found")
         if queue["owner"] == client:
 
-            other_servers = ["44.194.117.112:50051", "44.214.10.205:50051",
-                             "52.86.105.153:50051"]  # Cambiar dinámicamente
+            other_servers = get_queue_server(queue_name + '_replica')
+            for server in other_servers:
+                server = f"{server[:server.find(':')]}:50051"
             for server in other_servers:
                 try:
                     stub = get_grpc_client(server)
@@ -309,8 +315,10 @@ def unsubscribe_to_queue(queue_name: str, token: str):
         queue["subscribers"].remove(user)
         update_queue(queue_name, queue)
 
-        other_servers = ["44.194.117.112:50051", "44.214.10.205:50051",
-                         "52.86.105.153:50051"]  # Cambiar dinámicamente
+        other_servers = get_queue_server(queue_name + '_replica')
+        for server in other_servers:
+            server = f"{server[:server.find(':')]}:50051"
+            
         for server in other_servers:
             try:
                 stub = get_grpc_client(server)
