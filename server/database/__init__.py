@@ -18,9 +18,7 @@ def get_grpc_client(server_address):
 
 
 queues = find_all_queues()
-print(queues)
 topics = find_all_topics()
-print(topics)
 online_servers = get_servers()
 
 for queue in queues:
@@ -42,7 +40,7 @@ for queue in queues:
                 for k, v in response.pending_messages.items():
                     pending[k] = list(v.messages)
                 queue = {
-                    'name': response.name,
+                    'name': queue['name'],
                     'subscribers': list(response.subscribers),
                     'messages': list(response.messages),
                     'pending_messages': pending,
