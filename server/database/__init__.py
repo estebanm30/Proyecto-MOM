@@ -40,11 +40,12 @@ for queue in queues:
             if queue['update_date'] < response.update_date.ToDatetime():
                 queue = {
                     'name': queue['name'],
-                    'subscribers': response.subscribers,
-                    'messages': response.messages,
-                    'pending_messages': response.pending_messages,
+                    'subscribers': list(response.subscribers),
+                    'messages': list(response.messages),
+                    'pending_messages': dict(response.pending_messages),
                     'owner': response.owner,
-                    'update_date': response.update_date.ToDatetime()}
+                    'update_date': response.update_date.ToDatetime(),
+                }
                 update_queue(queue['name'], queue)
     except grpc.RpcError as e:
         raise HTTPException(status_code=500, detail="Server not online!")
