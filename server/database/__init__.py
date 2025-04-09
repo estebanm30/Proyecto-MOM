@@ -29,7 +29,6 @@ for queue in queues:
         name = queue['name'].replace('_replica', '')
         print(name)
         server_redirect = get_queue_server(name)
-        print(server_redirect)
         isReplica = True
     if not server_redirect:
         delete_queue(queue['name'])
