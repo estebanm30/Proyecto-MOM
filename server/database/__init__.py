@@ -30,33 +30,34 @@ for queue in queues:
         print(name)
         server_redirect = get_queue_server(name)
     if not server_redirect:
+        # HAY QUE ARREGLAR QUE CUANDO SE ELIMINE EN LA REPLICA SE SAQUE DEL ZOOKEEPER /mom_queues
         delete_queue(queue['name'])
-        if name.find('replica') == -1:
-            try:
-                path = f"/mom_queues/{name}"
-                if zk.exists(path):
-                    zk.delete(path)
-            except Exception as e:
-                print(f"Error deleting queue from ZooKeeper: {e}")
-            try:
-                path = f"/mom_queues_replicas/{name + '_replica'}"
-                if zk.exists(path):
-                    zk.delete(path)
-            except Exception as e:
-                print(f"Error deleting queue from ZooKeeper: {e}")
-        else:
-            try:
-                path = f"/mom_queues_replicas/{name}"
-                if zk.exists(path):
-                    zk.delete(path)
-            except Exception as e:
-                print(f"Error deleting queue from ZooKeeper: {e}")
-            try:
-                path = f"/mom_queues/{name.replace('_replica', '')}"
-                if zk.exists(path):
-                    zk.delete(path)
-            except Exception as e:
-                print(f"Error deleting queue from ZooKeeper: {e}")
+        # if name.find('replica') == -1:
+        #     try:
+        #         path = f"/mom_queues/{name}"
+        #         if zk.exists(path):
+        #             zk.delete(path)
+        #     except Exception as e:
+        #         print(f"Error deleting queue from ZooKeeper: {e}")
+        #     try:
+        #         path = f"/mom_queues_replicas/{name + '_replica'}"
+        #         if zk.exists(path):
+        #             zk.delete(path)
+        #     except Exception as e:
+        #         print(f"Error deleting queue from ZooKeeper: {e}")
+        # else:
+        #     try:
+        #         path = f"/mom_queues_replicas/{name}"
+        #         if zk.exists(path):
+        #             zk.delete(path)
+        #     except Exception as e:
+        #         print(f"Error deleting queue from ZooKeeper: {e}")
+        #     try:
+        #         path = f"/mom_queues/{name.replace('_replica', '')}"
+        #         if zk.exists(path):
+        #             zk.delete(path)
+        #     except Exception as e:
+        #         print(f"Error deleting queue from ZooKeeper: {e}")
         continue
     try:
         if server_redirect[:server_redirect.find(':')]+':8000' in online_servers[:]:
