@@ -57,7 +57,7 @@ for topic in topics:
             response = client.updateTopic(
                 mom_pb2.ReplicateTopicRequest(topic_name=name, owner=topic['owner']))
 
-            if queue['update_date'] < response['update_date']:
+            if queue['update_date'] < response.update_date:
                 update_topic(topic['name'], response['subscribers'], response['messages'],
                              response['pending_messages'], response['owner'], response['update_date'])
     except grpc.RpcError as e:
