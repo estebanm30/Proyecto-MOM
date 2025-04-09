@@ -54,11 +54,11 @@ for queue in queues:
 
 for topic in topics:
     if topic['name'].find('replica') == -1:
-        server_redirect = get_topic_server(topic['name'] + '_replica')
         name = queue['name'] + '_replica'
+        server_redirect = get_topic_server(name)
     else:
-        server_redirect = get_topic_server(topic['name'])
-        name = queue['name']
+        name = queue['name'].replace('_replica', '')
+        server_redirect = get_topic_server(name)
     try:
         if server_redirect[:server_redirect.find(':')]+':8000' in online_servers[:]:
             client = get_grpc_client(server_redirect)
