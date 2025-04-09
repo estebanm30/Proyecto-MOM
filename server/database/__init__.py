@@ -66,11 +66,14 @@ for topic in topics:
                 mom_pb2.ReplicateTopicRequest(topic_name=name, owner=topic['owner']))
 
             if queue['update_date'] < response.update_date.ToDatetime():
+                pending = {}
+                for k, v in response.pending_messages.items():
+                    pending[k] = list(v.messages)
                 topic = {
                     'name': topic['name'],
-                    'subscribers': response.subscribers,
-                    'messages': response.messages,
-                    'pending_messages': response.pending_messages,
+                    'subscribers': list(response.subscribers),
+                    'messages': list(response.messages),
+                    'pending_messages': pending,
                     'owner': response.owner,
                     'update_date': response.update_date.ToDatetime()
                 }
