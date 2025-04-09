@@ -20,8 +20,8 @@ def get_grpc_client(server_address):
 queues = find_all_queues()
 topics = find_all_topics()
 online_servers = get_servers()
-isReplica = False
 for queue in queues:
+    isReplica = False
     if queue['name'].find('replica') == -1:
         name = queue['name'] + '_replica'
         server_redirect = get_queue_server(name)
@@ -35,9 +35,11 @@ for queue in queues:
         delete_queue(queue['name'])
         if isReplica:
             path = f"/mom_queues/{name}"
+            print(path, '--------------------------')
             if zk.exists(path):
                 zk.delete(path)
             path = f"/mom_queues_replicas/{name + '_replica'}"
+            print(path, '--------------------------')
             if zk.exists(path):
                 zk.delete(path)
         else:
