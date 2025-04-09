@@ -1,3 +1,4 @@
+from google.protobuf.timestamp_pb2 import Timestamp
 import grpc
 from concurrent import futures
 import time
@@ -348,6 +349,52 @@ class QueueServiceHandler(mom_pb2_grpc.QueueServiceServicer):
             context.set_code(grpc.StatusCode.INTERNAL)
             context.set_details(str(e))
             return mom_pb2.Response(message="Message deletion replication failed")
+
+
+class OnBooting(mom_pb2_grpc.OnBootingServicer):
+    def updateTopic(self, request, context):
+        topic = find_topic(request.topic_name)
+        if not topic:
+            context.set_code(grpc.StatusCode.NOT_FOUND)
+            context.set_details("Topic not found")
+            return mom_pb2.Topic()
+
+        ts = Timestamp()
+        ts.FromDatetime(topic['update_date'])
+
+        return mom_pb2.Topic(
+            name=topic['name'],
+            subscribers=topic['subscribers'],
+            messages=topic['messages'],
+            pending_messages={
+                k: mom_pb2.MessageList(messages=v)
+                for k, v in topic['pending_messages'].items()
+            },
+            owner=topic['owner'],
+            update_date=ts
+        )
+
+    def updateQueues(self, request, context):
+        queue = find_queue(request.queue_name)
+        if not queue:
+            context.set_code(grpc.StatusCode.NOT_FOUND)
+            context.set_details("Queue not found")
+            return mom_pb2.Queue()
+
+        ts = Timestamp()
+        ts.FromDatetime(queue['update_date'])
+
+        return mom_pb2.Queue(
+            name=queue['name'],
+            subscribers=queue['subscribers'],
+            messages=queue['messages'],
+            pending_messages={
+                k: mom_pb2.MessageList(messages=v)
+                for k, v in queue['pending_messages'].items()
+            },
+            owner=queue['owner'],
+            update_date=ts
+        )
 
 
 def serve():

@@ -7,6 +7,7 @@ from utils import verify_token, check_redirect
 from zookeeper import zk, SERVER_ID, get_token_children, get_topic_server, get_round_robin_replica
 import mom_pb2
 import mom_pb2_grpc
+from datetime import datetime
 
 
 def get_topics(token: str):
@@ -29,7 +30,8 @@ def create_topic(topic: TopicModel, token: str):
         "subscribers": [],
         "messages": [],
         "pending_messages": {},
-        "owner": client
+        "owner": client,
+        'update_date': datetime.now()
     }
 
     try:
@@ -94,7 +96,7 @@ def subscribe_to_topic(topic_name: str, token: str):
         else:
             topic['subscribers'].append(user)
             topic['pending_messages'][user] = []
-
+        topic['update_date'] = datetime.now()
         update_topic(topic_name, topic)
         other_servers = ["44.194.117.112:50051", "44.214.10.205:50051",
                          "52.86.105.153:50051"]  # Cambiar dinamicamente
@@ -136,6 +138,7 @@ def unsubscribe_from_topic(topic_name: str, token: str):
         else:
             topic['subscribers'].remove(user)
             topic['pending_messages'].pop(user, None)
+        topic['update_date'] = datetime.now()
         update_topic(topic_name, topic)
 
         other_servers = ["44.194.117.112:50051", "44.214.10.205:50051",
@@ -175,7 +178,7 @@ def publish_message(topic_name: str, message: str, token: str, background_tasks:
         topic['messages'].append(message)
         for subscriber in topic['subscribers']:
             topic['pending_messages'][subscriber].append(message)
-
+        topic['update_date'] = datetime.now()
         update_topic(topic_name, topic)
 
         other_servers = ["44.194.117.112:50051",
@@ -225,6 +228,7 @@ def delete_one_topic(topic_name: str, token: str):
             topic['messages'].append(message)
             for subscriber in topic['subscribers']:
                 topic['pending_messages'][subscriber].append(message)
+            topic['update_date'] = datetime.now()
             update_topic(topic_name, topic)
 
             other_servers = ["44.194.117.112:50051", "44.214.10.205:50051",
@@ -264,6 +268,7 @@ def get_messages(token: str):
             messages.append(
                 {"topic": topic['name'], "message": topic['pending_messages'][user]})
             topic['pending_messages'][user] = []
+            topic['update_date'] = datetime.now()
             update_topic(topic['name'], topic)
     topics = find_all_topics()
     for topic in topics:
@@ -273,6 +278,7 @@ def get_messages(token: str):
                 cont += 1
         if cont == 0:
             topic['messages'] = []
+            topic['update_date'] = datetime.now()
             update_topic(topic['name'], topic)
 
     return {"messages": messages}

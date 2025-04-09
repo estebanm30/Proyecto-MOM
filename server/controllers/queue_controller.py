@@ -102,8 +102,8 @@ def subscribe_to_queue(queue_name: str, token: str):
         else:
             queue["subscribers"].append(user)
             queue["pending_messages"][user] = []
-            queue['update_date'] = datetime.now()
 
+        queue['update_date'] = datetime.now()
         update_queue(queue_name, queue)
 
         other_servers = ["44.194.117.112:50051", "44.214.10.205:50051",
@@ -342,6 +342,7 @@ def get_messages_queue(token: str):
             messages.append(
                 {"queue": queue['name'], "message": queue['pending_messages'][user]})
             queue['pending_messages'][user] = []
+            queue['update_date'] = datetime.now()
             update_queue(queue['name'], queue)
     queues = find_all_queues()
     for queue in queues:

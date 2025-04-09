@@ -5,7 +5,7 @@ import warnings
 
 import mom_pb2 as mom__pb2
 
-GRPC_GENERATED_VERSION = '1.71.0'
+GRPC_GENERATED_VERSION = '1.70.0'
 GRPC_VERSION = grpc.__version__
 _version_not_supported = False
 
@@ -1018,6 +1018,121 @@ class QueueService(object):
             '/QueueService/ReplicateMessageDeletion',
             mom__pb2.ReplicateMessageDeletionRequest.SerializeToString,
             mom__pb2.Response.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+
+class OnBootingStub(object):
+    """Missing associated documentation comment in .proto file."""
+
+    def __init__(self, channel):
+        """Constructor.
+
+        Args:
+            channel: A grpc.Channel.
+        """
+        self.updateTopic = channel.unary_unary(
+                '/OnBooting/updateTopic',
+                request_serializer=mom__pb2.ReplicateTopicRequest.SerializeToString,
+                response_deserializer=mom__pb2.Topic.FromString,
+                _registered_method=True)
+        self.updateQueues = channel.unary_unary(
+                '/OnBooting/updateQueues',
+                request_serializer=mom__pb2.ReplicateQueueRequest.SerializeToString,
+                response_deserializer=mom__pb2.Queue.FromString,
+                _registered_method=True)
+
+
+class OnBootingServicer(object):
+    """Missing associated documentation comment in .proto file."""
+
+    def updateTopic(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def updateQueues(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+
+def add_OnBootingServicer_to_server(servicer, server):
+    rpc_method_handlers = {
+            'updateTopic': grpc.unary_unary_rpc_method_handler(
+                    servicer.updateTopic,
+                    request_deserializer=mom__pb2.ReplicateTopicRequest.FromString,
+                    response_serializer=mom__pb2.Topic.SerializeToString,
+            ),
+            'updateQueues': grpc.unary_unary_rpc_method_handler(
+                    servicer.updateQueues,
+                    request_deserializer=mom__pb2.ReplicateQueueRequest.FromString,
+                    response_serializer=mom__pb2.Queue.SerializeToString,
+            ),
+    }
+    generic_handler = grpc.method_handlers_generic_handler(
+            'OnBooting', rpc_method_handlers)
+    server.add_generic_rpc_handlers((generic_handler,))
+    server.add_registered_method_handlers('OnBooting', rpc_method_handlers)
+
+
+ # This class is part of an EXPERIMENTAL API.
+class OnBooting(object):
+    """Missing associated documentation comment in .proto file."""
+
+    @staticmethod
+    def updateTopic(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/OnBooting/updateTopic',
+            mom__pb2.ReplicateTopicRequest.SerializeToString,
+            mom__pb2.Topic.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def updateQueues(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/OnBooting/updateQueues',
+            mom__pb2.ReplicateQueueRequest.SerializeToString,
+            mom__pb2.Queue.FromString,
             options,
             channel_credentials,
             insecure,

@@ -1,5 +1,5 @@
-import "google/protobuf/timestamp.proto";
 syntax = "proto3";
+import "google/protobuf/timestamp.proto";
 
 service TopicService {
     rpc Subscribe (SubscriptionRequest) returns (Response);
@@ -29,27 +29,27 @@ service QueueService {
     rpc ReplicateMessageDeletion (ReplicateMessageDeletionRequest) returns (Response);
 }
 
-service onBooting {
-    rpc updateTopic (ReplicateTopicRequest) return (Topic);
-    rpc updateQueues (ReplicateQueueRequest) return (Queue);
+service OnBooting {
+    rpc updateTopic (ReplicateTopicRequest) returns (Topic);
+    rpc updateQueues (ReplicateQueueRequest) returns (Queue);
 }
 
 message Topic {
-    string topic_name = 1;
+    string name = 1;
     repeated string subscribers = 2;
     repeated string messages = 3;
     map<string, MessageList> pending_messages = 4;
     string owner = 5;
-    google.protobuf.Timestamp last_updated = 6;
+    google.protobuf.Timestamp update_date = 6;
 }
 
 message Queue {
-    string queue_name = 1;
+    string name = 1;
     repeated string subscribers = 2;
     repeated string messages = 3;
     map<string, MessageList> pending_messages = 4;
     string owner = 5;
-    google.protobuf.Timestamp last_updated = 6;
+    google.protobuf.Timestamp update_date = 6;
 }
 
 message MessageList {
