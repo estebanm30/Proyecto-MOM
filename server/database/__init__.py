@@ -40,7 +40,7 @@ for queue in queues:
             if queue['update_date'] < response.update_date.ToDatetime():
                 pending = {}
                 for k, v in response.pending_messages.items():
-                    pending[k] = list(v)
+                    pending[k] = list(v.messages)
                 queue = {
                     'name': response.name,
                     'subscribers': list(response.subscribers),
