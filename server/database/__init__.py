@@ -31,24 +31,19 @@ for queue in queues:
         server_redirect = get_queue_server(name)
         isReplica = True
     if not server_redirect:
-        # HAY QUE ARREGLAR QUE CUANDO SE ELIMINE EN LA REPLICA SE SAQUE DEL ZOOKEEPER /mom_queues
         delete_queue(queue['name'])
-        if isReplica:
-            path = f"/mom_queues/{name}"
-            print(path, '--------------------------')
+        try:
+            path = f"/mom_queues_replicas/{queue['name']}"
             if zk.exists(path):
                 zk.delete(path)
-            path = f"/mom_queues_replicas/{name + '_replica'}"
-            print(path, '--------------------------')
+        except Exception as e:
+            print(f"Error deleting queue from ZooKeeper: {e}")
+        try:
+            path = f"/mom_queues/{queue['name']}"
             if zk.exists(path):
                 zk.delete(path)
-        else:
-            path = f"/mom_queues_replicas/{name}"
-            if zk.exists(path):
-                zk.delete(path)
-            path = f"/mom_queues/{name.replace('_replica', '')}"
-            if zk.exists(path):
-                zk.delete(path)
+        except Exception as e:
+            print(f"Error deleting queue from ZooKeeper: {e}")
         continue
     try:
         if server_redirect[:server_redirect.find(':')]+':8000' in online_servers[:]:
