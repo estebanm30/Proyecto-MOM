@@ -21,7 +21,6 @@ queues = find_all_queues()
 topics = find_all_topics()
 online_servers = get_servers()
 for queue in queues:
-    isReplica = False
     if queue['name'].find('replica') == -1:
         name = queue['name'] + '_replica'
         server_redirect = get_queue_server(name)
@@ -29,7 +28,6 @@ for queue in queues:
         name = queue['name'].replace('_replica', '')
         print(name)
         server_redirect = get_queue_server(name)
-        isReplica = True
     if not server_redirect:
         delete_queue(queue['name'])
         try:

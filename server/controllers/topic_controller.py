@@ -253,6 +253,13 @@ def delete_one_topic(topic_name: str, token: str):
             path = f"/mom_topics/{topic_name}"
             if zk.exists(path):
                 zk.delete(path)
+            if topic_name.endswith('_replica'):
+                path = f"/mom_topics/{topic_name.replace('_replica', '')}"
+                if zk.exists(path):
+                    zk.delete(path)
+                path = f"/mom_topics_replicas/{topic_name}"
+                if zk.exists(path):
+                    zk.delete(path)
         else:
             return {"message": "You cannot delete this topic"}
         return {"message": "Topic deleted"}
