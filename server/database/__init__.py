@@ -21,10 +21,8 @@ queues = find_all_queues()
 topics = find_all_topics()
 
 for queue in queues:
-    if queue['name'].find('replica') != -1:
-        print('aqqqqqqquuuuuuiiiiiiiiiiiii')
+    if queue['name'].find('replica') == -1:
         name = queue['name'] + '_replica'
-        print(name)
         server_redirect = get_queue_server(name)
     else:
         name = queue['name'].replace('_replica', '')
