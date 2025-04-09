@@ -23,7 +23,7 @@ topics = find_all_topics()
 for queue in queues:
     if queue['name'].find('replica') != -1:
         server_redirect = get_queue_server(queue['name'] + '_replica')
-        name = queue['name' + '_replica']
+        name = queue['name'] + '_replica'
     else:
         server_redirect = get_queue_server(queue['name'])
         name = queue['name']
@@ -42,7 +42,7 @@ for queue in queues:
 for topic in topics:
     if topic['name'].find('replica') != -1:
         server_redirect = get_topic_server(topic['name'] + '_replica')
-        name = queue['name' + '_replica']
+        name = queue['name'] + '_replica'
     else:
         server_redirect = get_topic_server(topic['name'])
         name = queue['name']
