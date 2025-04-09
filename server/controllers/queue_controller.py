@@ -289,8 +289,7 @@ def delete_one_queue(queue_name: str, token: str):
                 path = f"/mom_queues/{queue_name.replace('_replica', '')}"
                 if zk.exists(path):
                     zk.delete(path)
-            else:
-                path = f"/mom_queues_replicas/{queue_name + '_replica'}"
+                path = f"/mom_queues_replicas/{queue_name}"
                 if zk.exists(path):
                     zk.delete(path)
             return {"message": "Queue deleted"}
