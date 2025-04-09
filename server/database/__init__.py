@@ -43,6 +43,7 @@ for queue in queues:
                 zk.delete(path)
         except Exception as e:
             print(f"Error deleting queue from ZooKeeper: {e}")
+        continue
     try:
         if server_redirect[:server_redirect.find(':')]+':8000' in online_servers[:]:
             client = get_grpc_client(server_redirect)
@@ -87,6 +88,7 @@ for topic in topics:
                 zk.delete(path)
         except Exception as e:
             print(f"Error deleting queue from ZooKeeper: {e}")
+        continue
     try:
         if server_redirect[:server_redirect.find(':')]+':8000' in online_servers[:]:
             client = get_grpc_client(server_redirect)
