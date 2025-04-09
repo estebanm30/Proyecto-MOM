@@ -233,6 +233,9 @@ try:
                                                     params={"topic_name": topic_name, "token": token})
 
                             print("\033c", end="")
+                            if response.status_code == 500:
+                                response = requests.put(f"http://{server_address}/topic/subscribe/",
+                                                        params={"topic_name": topic_name + '_replica', "token": token})
                             print(colored(response.json(), "yellow"))
 
                         elif option == "3":
@@ -245,6 +248,9 @@ try:
                                                      params={"topic_name": topic_name, "message": message, "token": token})
 
                             print("\033c", end="")
+                            if response.status_code == 500:
+                                response = requests.post(f"http://{server_address}/topic/publish/",
+                                                         params={"topic_name": topic_name + '_replica', "message": message, "token": token})
                             print(colored(response.json(), "yellow"))
 
                         elif option == "4":
@@ -256,6 +262,9 @@ try:
                                                     params={"topic_name": topic_name, "token": token})
 
                             print("\033c", end="")
+                            if response.status_code == 500:
+                                response = requests.put(f"http://{server_address}/topic/unsubscribe/",
+                                                        params={"topic_name": topic_name + '_replica', "token": token})
                             print(colored(response.json(), "yellow"))
 
                         elif option == "5":
@@ -267,6 +276,9 @@ try:
                                 f"http://{server_address}/topic/", params={"topic_name": topic_name, "token": token})
 
                             print("\033c", end="")
+                            if response.status_code == 500:
+                                response = requests.delete(
+                                    f"http://{server_address}/topic/", params={"topic_name": topic_name + '_replica', "token": token})
                             print(colored(response.json(), "yellow"))
 
                         elif option == "6":
