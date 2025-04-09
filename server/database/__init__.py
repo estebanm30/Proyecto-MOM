@@ -54,10 +54,10 @@ for queue in queues:
 
 for topic in topics:
     if topic['name'].find('replica') == -1:
-        name = queue['name'] + '_replica'
+        name = topic['name'] + '_replica'
         server_redirect = get_topic_server(name)
     else:
-        name = queue['name'].replace('_replica', '')
+        name = topic['name'].replace('_replica', '')
         server_redirect = get_topic_server(name)
     try:
         if server_redirect[:server_redirect.find(':')]+':8000' in online_servers[:]:
@@ -65,7 +65,7 @@ for topic in topics:
             response = client.updateTopic(
                 mom_pb2.ReplicateTopicRequest(topic_name=name, owner=topic['owner']))
 
-            if queue['update_date'] < response.update_date.ToDatetime():
+            if topic['update_date'] < response.update_date.ToDatetime():
                 pending = {}
                 for k, v in response.pending_messages.items():
                     pending[k] = list(v.messages)
