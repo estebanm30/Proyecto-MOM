@@ -29,12 +29,6 @@ for queue in queues:
         name = queue['name'].replace('_replica', '')
         print(name)
         server_redirect = get_queue_server(name)
-        try:
-            path = f"/mom_queues/{name}"
-            if zk.exists(path):
-                zk.delete(path)
-        except Exception as e:
-            print(f"Error deleting queue from ZooKeeper: {e}")
     if not server_redirect:
         delete_queue(queue['name'])
         try:
@@ -45,6 +39,12 @@ for queue in queues:
             print(f"Error deleting queue from ZooKeeper: {e}")
         try:
             path = f"/mom_queues/{queue['name']}"
+            if zk.exists(path):
+                zk.delete(path)
+        except Exception as e:
+            print(f"Error deleting queue from ZooKeeper: {e}")
+        try:
+            path = f"/mom_queues/{name}"
             if zk.exists(path):
                 zk.delete(path)
         except Exception as e:
