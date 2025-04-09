@@ -21,45 +21,46 @@ queues = find_all_queues()
 topics = find_all_topics()
 online_servers = get_servers()
 
-for queue in queues:
-    if queue['name'].find('replica') == -1:
-        name = queue['name'] + '_replica'
-        server_redirect = get_queue_server(name)
-    else:
-        name = queue['name'].replace('_replica', '')
-        print(name)
-        server_redirect = get_queue_server(name)
-    try:
-        if server_redirect[:server_redirect.find(':')]+':8000' in online_servers[:]:
-            client = get_grpc_client(server_redirect)
-            response = client.updateTopic(
-                mom_pb2.ReplicateQueueRequest(queue_name=name, owner=queue['owner']))
+if len(queues) != 0:
+    for queue in queues:
+        if queue['name'].find('replica') == -1:
+            name = queue['name'] + '_replica'
+            server_redirect = get_queue_server(name)
+        else:
+            name = queue['name'].replace('_replica', '')
+            print(name)
+            server_redirect = get_queue_server(name)
+        try:
+            if server_redirect[:server_redirect.find(':')]+':8000' in online_servers[:]:
+                client = get_grpc_client(server_redirect)
+                response = client.updateTopic(
+                    mom_pb2.ReplicateQueueRequest(queue_name=name, owner=queue['owner']))
 
-            if queue['update_date'] < response['update_date']:
-                update_queue(queue['name'], response['subscribers'], response['messages'],
-                             response['pending_messages'], response['owner'], response['update_date'])
-    except grpc.RpcError as e:
-        raise HTTPException(status_code=500, detail="Server not online!")
+                if queue['update_date'] < response['update_date']:
+                    update_queue(queue['name'], response['subscribers'], response['messages'],
+                                 response['pending_messages'], response['owner'], response['update_date'])
+        except grpc.RpcError as e:
+            raise HTTPException(status_code=500, detail="Server not online!")
 
+if len(topics) != 0:
+    for topic in topics:
+        if topic['name'].find('replica') != -1:
+            server_redirect = get_topic_server(topic['name'] + '_replica')
+            name = queue['name'] + '_replica'
+        else:
+            server_redirect = get_topic_server(topic['name'])
+            name = queue['name']
+        try:
+            if server_redirect[:server_redirect.find(':')]+':8000' in online_servers[:]:
+                client = get_grpc_client(server_redirect)
+                response = client.updateTopic(
+                    mom_pb2.ReplicateTopicRequest(topic_name=name, owner=topic['owner']))
 
-for topic in topics:
-    if topic['name'].find('replica') != -1:
-        server_redirect = get_topic_server(topic['name'] + '_replica')
-        name = queue['name'] + '_replica'
-    else:
-        server_redirect = get_topic_server(topic['name'])
-        name = queue['name']
-    try:
-        if server_redirect[:server_redirect.find(':')]+':8000' in online_servers[:]:
-            client = get_grpc_client(server_redirect)
-            response = client.updateTopic(
-                mom_pb2.ReplicateTopicRequest(topic_name=name, owner=topic['owner']))
-
-            if queue['update_date'] < response['update_date']:
-                update_topic(topic['name'], response['subscribers'], response['messages'],
-                             response['pending_messages'], response['owner'], response['update_date'])
-    except grpc.RpcError as e:
-        raise HTTPException(status_code=500, detail="Server not online!")
+                if queue['update_date'] < response['update_date']:
+                    update_topic(topic['name'], response['subscribers'], response['messages'],
+                                 response['pending_messages'], response['owner'], response['update_date'])
+        except grpc.RpcError as e:
+            raise HTTPException(status_code=500, detail="Server not online!")
 
 __all__ = ["insert_queue",
            "find_queue", "find_all_queues", "update_queue", "delete_queue", "insert_topic", "find_all_topics", "find_topic", "update_topic", "delete_topic", "find_all_clients", "find_client", "update_client", "delete_client"]
