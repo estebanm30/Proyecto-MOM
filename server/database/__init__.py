@@ -20,7 +20,7 @@ def get_grpc_client(server_address):
 queues = find_all_queues()
 topics = find_all_topics()
 online_servers = get_servers()
-
+isReplica = False
 for queue in queues:
     if queue['name'].find('replica') == -1:
         name = queue['name'] + '_replica'
@@ -29,35 +29,24 @@ for queue in queues:
         name = queue['name'].replace('_replica', '')
         print(name)
         server_redirect = get_queue_server(name)
+        isReplica = True
     if not server_redirect:
         # HAY QUE ARREGLAR QUE CUANDO SE ELIMINE EN LA REPLICA SE SAQUE DEL ZOOKEEPER /mom_queues
         delete_queue(queue['name'])
-        # if name.find('replica') == -1:
-        #     try:
-        #         path = f"/mom_queues/{name}"
-        #         if zk.exists(path):
-        #             zk.delete(path)
-        #     except Exception as e:
-        #         print(f"Error deleting queue from ZooKeeper: {e}")
-        #     try:
-        #         path = f"/mom_queues_replicas/{name + '_replica'}"
-        #         if zk.exists(path):
-        #             zk.delete(path)
-        #     except Exception as e:
-        #         print(f"Error deleting queue from ZooKeeper: {e}")
-        # else:
-        #     try:
-        #         path = f"/mom_queues_replicas/{name}"
-        #         if zk.exists(path):
-        #             zk.delete(path)
-        #     except Exception as e:
-        #         print(f"Error deleting queue from ZooKeeper: {e}")
-        #     try:
-        #         path = f"/mom_queues/{name.replace('_replica', '')}"
-        #         if zk.exists(path):
-        #             zk.delete(path)
-        #     except Exception as e:
-        #         print(f"Error deleting queue from ZooKeeper: {e}")
+        if isReplica:
+            path = f"/mom_queues/{name}"
+            if zk.exists(path):
+                zk.delete(path)
+            path = f"/mom_queues_replicas/{name + '_replica'}"
+            if zk.exists(path):
+                zk.delete(path)
+        else:
+            path = f"/mom_queues_replicas/{name}"
+            if zk.exists(path):
+                zk.delete(path)
+            path = f"/mom_queues/{name.replace('_replica', '')}"
+            if zk.exists(path):
+                zk.delete(path)
         continue
     try:
         if server_redirect[:server_redirect.find(':')]+':8000' in online_servers[:]:
