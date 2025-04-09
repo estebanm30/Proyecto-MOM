@@ -63,6 +63,13 @@ def close_connection():
     zk.close()
 
 
+def get_servers():
+    servers_path = "/servers"
+    if zk.exists(servers_path):
+        return zk.get_children(servers_path)
+    return []
+
+
 def get_zk_client():
     return zk
 

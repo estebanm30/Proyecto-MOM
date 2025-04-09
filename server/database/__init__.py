@@ -6,7 +6,7 @@ from .queues_queries import insert_queue, find_queue, find_all_queues, update_qu
 from .topics_queries import insert_topic, find_all_topics, find_topic, update_topic, delete_topic
 from .clients_queries import delete_client, update_client, find_client, find_all_clients
 import grpc
-from zookeeper import get_queue_server, get_topic_server
+from zookeeper import get_queue_server, get_topic_server, get_servers
 
 
 def get_grpc_client(server_address):
@@ -19,6 +19,7 @@ def get_grpc_client(server_address):
 
 queues = find_all_queues()
 topics = find_all_topics()
+online_servers = get_servers()
 
 for queue in queues:
     if queue['name'].find('replica') == -1:
@@ -29,13 +30,14 @@ for queue in queues:
         print(name)
         server_redirect = get_queue_server(name)
     try:
-        client = get_grpc_client(server_redirect)
-        response = client.updateTopic(
-            mom_pb2.ReplicateQueueRequest(queue_name=name, owner=queue['owner']))
+        if server_redirect[:server_redirect.find(':')]+':8000' in online_servers[:]:
+            client = get_grpc_client(server_redirect)
+            response = client.updateTopic(
+                mom_pb2.ReplicateQueueRequest(queue_name=name, owner=queue['owner']))
 
-        if queue['update_date'] < response['update_date']:
-            update_queue(queue['name'], response['subscribers'], response['messages'],
-                         response['pending_messages'], response['owner'], response['update_date'])
+            if queue['update_date'] < response['update_date']:
+                update_queue(queue['name'], response['subscribers'], response['messages'],
+                             response['pending_messages'], response['owner'], response['update_date'])
     except grpc.RpcError as e:
         raise HTTPException(status_code=500, detail="Server not online!")
 
@@ -48,13 +50,14 @@ for topic in topics:
         server_redirect = get_topic_server(topic['name'])
         name = queue['name']
     try:
-        client = get_grpc_client(server_redirect)
-        response = client.updateTopic(
-            mom_pb2.ReplicateTopicRequest(topic_name=name, owner=topic['owner']))
+        if server_redirect[:server_redirect.find(':')]+':8000' in online_servers[:]:
+            client = get_grpc_client(server_redirect)
+            response = client.updateTopic(
+                mom_pb2.ReplicateTopicRequest(topic_name=name, owner=topic['owner']))
 
-        if queue['update_date'] < response['update_date']:
-            update_topic(topic['name'], response['subscribers'], response['messages'],
-                         response['pending_messages'], response['owner'], response['update_date'])
+            if queue['update_date'] < response['update_date']:
+                update_topic(topic['name'], response['subscribers'], response['messages'],
+                             response['pending_messages'], response['owner'], response['update_date'])
     except grpc.RpcError as e:
         raise HTTPException(status_code=500, detail="Server not online!")
 
