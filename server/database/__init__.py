@@ -38,13 +38,16 @@ for queue in queues:
                 mom_pb2.ReplicateQueueRequest(queue_name=name, owner=queue['owner']))
 
             if queue['update_date'] < response.update_date.ToDatetime():
+                pending = {}
+                for k, v in response.pending_messages.items():
+                    pending[k] = list(v)
                 queue = {
-                    'name': queue['name'],
+                    'name': response.name,
                     'subscribers': list(response.subscribers),
                     'messages': list(response.messages),
-                    'pending_messages': dict(response.pending_messages),
+                    'pending_messages': pending,
                     'owner': response.owner,
-                    'update_date': response.update_date.ToDatetime(),
+                    'update_date': response.update_date.ToDatetime()
                 }
                 update_queue(queue['name'], queue)
     except grpc.RpcError as e:
