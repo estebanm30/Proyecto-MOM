@@ -31,7 +31,7 @@ for queue in queues:
     try:
         client = get_grpc_client(server_redirect)
         response = client.updateTopic(
-            mom_pb2.ReplicateQueueRequest(name=name, owner=queue['owner']))
+            mom_pb2.ReplicateQueueRequest(queue_name=name, owner=queue['owner']))
 
         if queue['update_date'] < response['update_date']:
             update_queue(queue['name'], response['subscribers'], response['messages'],
@@ -50,7 +50,7 @@ for topic in topics:
     try:
         client = get_grpc_client(server_redirect)
         response = client.updateTopic(
-            mom_pb2.ReplicateTopicRequest(name=name, owner=topic['owner']))
+            mom_pb2.ReplicateTopicRequest(topic_name=name, owner=topic['owner']))
 
         if queue['update_date'] < response['update_date']:
             update_topic(topic['name'], response['subscribers'], response['messages'],
