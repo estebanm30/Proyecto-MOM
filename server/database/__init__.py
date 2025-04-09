@@ -6,7 +6,7 @@ from .queues_queries import insert_queue, find_queue, find_all_queues, update_qu
 from .topics_queries import insert_topic, find_all_topics, find_topic, update_topic, delete_topic
 from .clients_queries import delete_client, update_client, find_client, find_all_clients
 import grpc
-from zookeeper import get_queue_server, get_topic_server, get_servers
+from zookeeper import get_queue_server, get_topic_server, get_servers, zk
 
 
 def get_grpc_client(server_address):
@@ -29,6 +29,20 @@ for queue in queues:
         name = queue['name'].replace('_replica', '')
         print(name)
         server_redirect = get_queue_server(name)
+    if not server_redirect:
+        delete_queue(queue['name'])
+        try:
+            path = f"/mom_queues_replicas/{queue['name']}"
+            if zk.exists(path):
+                zk.delete(path)
+        except Exception as e:
+            print(f"Error deleting queue from ZooKeeper: {e}")
+        try:
+            path = f"/mom_queues/{queue['name']}"
+            if zk.exists(path):
+                zk.delete(path)
+        except Exception as e:
+            print(f"Error deleting queue from ZooKeeper: {e}")
     try:
         if server_redirect[:server_redirect.find(':')]+':8000' in online_servers[:]:
             client = get_grpc_client(server_redirect)
@@ -59,6 +73,20 @@ for topic in topics:
     else:
         name = topic['name'].replace('_replica', '')
         server_redirect = get_topic_server(name)
+    if not server_redirect:
+        delete_topic(topic['name'])
+        try:
+            path = f"/mom_topics_replicas/{topic['name']}"
+            if zk.exists(path):
+                zk.delete(path)
+        except Exception as e:
+            print(f"Error deleting queue from ZooKeeper: {e}")
+        try:
+            path = f"/mom_topics/{topic['name']}"
+            if zk.exists(path):
+                zk.delete(path)
+        except Exception as e:
+            print(f"Error deleting queue from ZooKeeper: {e}")
     try:
         if server_redirect[:server_redirect.find(':')]+':8000' in online_servers[:]:
             client = get_grpc_client(server_redirect)
