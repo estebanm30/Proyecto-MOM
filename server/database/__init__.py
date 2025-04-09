@@ -22,11 +22,13 @@ topics = find_all_topics()
 
 for queue in queues:
     if queue['name'].find('replica') != -1:
-        server_redirect = get_queue_server(queue['name'] + '_replica')
         name = queue['name'] + '_replica'
+        print(name)
+        server_redirect = get_queue_server(name)
     else:
-        server_redirect = get_queue_server(queue['name'])
         name = queue['name'].replace('_replica', '')
+        print(name)
+        server_redirect = get_queue_server(name)
     try:
         client = get_grpc_client(server_redirect)
         response = client.updateTopic(
