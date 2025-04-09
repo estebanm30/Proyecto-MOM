@@ -11,6 +11,7 @@ from controllers.topic_controller import (
 from controllers.queue_controller import subscribe_to_queue, send_message, receive_message, delete_one_queue, unsubscribe_to_queue
 from fastapi import HTTPException, BackgroundTasks
 from zookeeper import get_zk_client, zk, SERVER_ID
+from datetime import datetime
 
 
 class MOMService(mom_pb2_grpc.TopicServiceServicer):
@@ -64,7 +65,8 @@ class MOMService(mom_pb2_grpc.TopicServiceServicer):
                     "subscribers": [],
                     "messages": [],
                     "pending_messages": {},
-                    "owner": request.owner
+                    "owner": request.owner,
+                    'update_date': datetime.now()
                 })
                 path = f"/mom_topics_replicas/{request.topic_name}"
                 zk.ensure_path(path)
@@ -83,6 +85,7 @@ class MOMService(mom_pb2_grpc.TopicServiceServicer):
                 if request.subscriber not in topic['subscribers']:
                     topic['subscribers'].append(request.subscriber)
                     topic['pending_messages'][request.subscriber] = []
+                    topic['update_date'] = datetime.now()
                     update_topic(request.topic_name, topic)
                 return mom_pb2.Response(message=f"Replicated subscription to {request.topic_name} for {request.subscriber}")
             else:
@@ -108,7 +111,7 @@ class MOMService(mom_pb2_grpc.TopicServiceServicer):
                     else:
                         topic['pending_messages'][subscriber] = [
                             request.message]
-
+                topic['update_date'] = datetime.now()
                 update_topic(request.topic_name, topic)
                 return mom_pb2.Response(message=f"Replicated message in {request.topic_name}")
             else:
@@ -127,6 +130,7 @@ class MOMService(mom_pb2_grpc.TopicServiceServicer):
                 if request.subscriber in topic['subscribers']:
                     topic['subscribers'].remove(request.subscriber)
                     topic['pending_messages'].pop(request.subscriber, None)
+                    topic['update_date'] = datetime.now()
                     update_topic(request.topic_name, topic)
                 return mom_pb2.Response(message=f"Replicated unsubscription from {request.topic_name} for {request.subscriber}")
             else:
@@ -148,7 +152,7 @@ class MOMService(mom_pb2_grpc.TopicServiceServicer):
                     if subscriber in topic['pending_messages']:
                         topic['pending_messages'][subscriber].append(
                             request.last_message)
-
+                topic['update_date'] = datetime.now()
                 update_topic(request.topic_name, topic)
                 time.sleep(2)
 
@@ -226,7 +230,8 @@ class QueueServiceHandler(mom_pb2_grpc.QueueServiceServicer):
                     "subscribers": [],
                     "messages": [],
                     "pending_messages": {},
-                    "owner": request.owner
+                    "owner": request.owner,
+                    'update_date': datetime.now()
                 })
                 path = f"/mom_queues_replicas/{request.queue_name}"
                 zk.ensure_path(path)
@@ -245,6 +250,7 @@ class QueueServiceHandler(mom_pb2_grpc.QueueServiceServicer):
                 if request.subscriber not in queue['subscribers']:
                     queue['subscribers'].append(request.subscriber)
                     queue['pending_messages'][request.subscriber] = []
+                    queue['update_date'] = datetime.now()
                     update_queue(request.queue_name, queue)
                 return mom_pb2.Response(message=f"Replicated subscription to queue {request.queue_name} for {request.subscriber}")
             else:
@@ -272,6 +278,7 @@ class QueueServiceHandler(mom_pb2_grpc.QueueServiceServicer):
 
                 if request.current_subscriber_idx >= 0:
                     queue['current_subscriber_idx'] = request.current_subscriber_idx
+                queue['update_date'] = datetime.now()
                 update_queue(request.queue_name, queue)
                 return mom_pb2.Response(message=f"Replicated message in queue {request.queue_name}")
             else:
@@ -290,6 +297,7 @@ class QueueServiceHandler(mom_pb2_grpc.QueueServiceServicer):
                 if request.subscriber in queue['subscribers']:
                     queue['subscribers'].remove(request.subscriber)
                     queue['pending_messages'].pop(request.subscriber, None)
+                    queue['update_date'] = datetime.now()
                     update_queue(request.queue_name, queue)
                 return mom_pb2.Response(message=f"Replicated unsubscription from queue {request.queue_name} for {request.subscriber}")
             else:
@@ -331,6 +339,7 @@ class QueueServiceHandler(mom_pb2_grpc.QueueServiceServicer):
                     if request.message in queue['pending_messages'][request.subscriber]:
                         queue['pending_messages'][request.subscriber].remove(
                             request.message)
+                        queue['update_date'] = datetime.now()
                         update_queue(request.queue_name, queue)
                 return mom_pb2.Response(message=f"Replicated message deletion from queue {request.queue_name} for {request.subscriber}")
             else:

@@ -7,6 +7,7 @@ from zookeeper import zk, SERVER_ID, get_tokens, get_token_children, get_round_r
 import mom_pb2
 import mom_pb2_grpc
 import grpc
+from datetime import datetime
 
 
 def get_queues(token: str):
@@ -41,7 +42,8 @@ def create_queue(queue: QueueModel, token: str):
         "subscribers": [],
         "messages": [],
         "pending_messages": {},
-        "owner": client
+        "owner": client,
+        'update_date': datetime.now()
     }
 
     try:
@@ -100,6 +102,7 @@ def subscribe_to_queue(queue_name: str, token: str):
         else:
             queue["subscribers"].append(user)
             queue["pending_messages"][user] = []
+            queue['update_date'] = datetime.now()
 
         update_queue(queue_name, queue)
 
@@ -142,6 +145,7 @@ def send_message(queue_name: str, message: str, token: str):
 
         if not queue["subscribers"]:
             queue["messages"].append(message)
+
         else:
             if "current_subscriber_idx" not in queue:
                 queue["current_subscriber_idx"] = 0
@@ -153,7 +157,7 @@ def send_message(queue_name: str, message: str, token: str):
 
             queue["current_subscriber_idx"] = (
                 subscriber_idx + 1) % len(queue["subscribers"])
-
+        queue['update_date'] = datetime.now()
         update_queue(queue_name, queue)
 
         other_servers = ["44.194.117.112:50051",
@@ -221,6 +225,7 @@ def receive_message(queue_name: str, token: str):
 
         queue["current_subscriber_idx"] = (
             current_idx + 1) % len(queue["subscribers"])
+        queue['update_date'] = datetime.now()
         update_queue(queue_name, queue)
 
         other_servers = ["44.194.117.112:50051", "44.214.10.205:50051",
@@ -307,6 +312,7 @@ def unsubscribe_to_queue(queue_name: str, token: str):
             raise HTTPException(
                 status_code=403, detail="Not subscribed to this queue")
         queue["subscribers"].remove(user)
+        queue['update_date'] = datetime.now()
         update_queue(queue_name, queue)
 
         other_servers = ["44.194.117.112:50051", "44.214.10.205:50051",
@@ -345,6 +351,7 @@ def get_messages_queue(token: str):
                 cont += 1
         if cont == 0:
             queue['messages'] = []
+            queue['update_date'] = datetime.now()
             update_queue(queue['name'], queue)
             """
             #Va acá o en receive_message?

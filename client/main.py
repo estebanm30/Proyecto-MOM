@@ -284,5 +284,5 @@ try:
         else:
             print("Connection failed")
 
-except KeyboardInterrupt:
+except:
     remove_token(token)
