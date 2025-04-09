@@ -403,6 +403,7 @@ def serve():
     mom_pb2_grpc.add_TopicServiceServicer_to_server(MOMService(), server)
     mom_pb2_grpc.add_QueueServiceServicer_to_server(
         QueueServiceHandler(), server)
+    mom_pb2_grpc.add_OnBootingServicer_to_server(OnBooting(), server)
     port = "50051"
     server.add_insecure_port(f"[::]:{port}")
     server.start()
