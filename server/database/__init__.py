@@ -14,7 +14,7 @@ def get_grpc_client(server_address):
           server_address, '---------------------')
     newServer_address = f"{server_address[:server_address.find(':')]}:50051"
     channel = grpc.insecure_channel(newServer_address)
-    return mom_pb2_grpc.QueueServiceStub(channel)
+    return mom_pb2_grpc.OnBootingStub(channel)
 
 
 queues = find_all_queues()
