@@ -38,8 +38,14 @@ for queue in queues:
                 mom_pb2.ReplicateQueueRequest(queue_name=name, owner=queue['owner']))
 
             if queue['update_date'] < response.update_date.ToDatetime():
-                update_queue(queue['name'], response.subscribers, response.messages,
-                             response.pending_messages, response.owner, response.update_date)
+                queue = {
+                    'name': queue['name'],
+                    'subscribers': response.subscribers,
+                    'messages': response.messages,
+                    'pending_messages': response.pending_messages,
+                    'owner': response.owner,
+                    'update_date': response.update_date.ToDatetime()}
+                update_queue(queue['name'], queue)
     except grpc.RpcError as e:
         raise HTTPException(status_code=500, detail="Server not online!")
 
@@ -58,8 +64,15 @@ for topic in topics:
                 mom_pb2.ReplicateTopicRequest(topic_name=name, owner=topic['owner']))
 
             if queue['update_date'] < response.update_date.ToDatetime():
-                update_topic(topic['name'], response.subscribers, response.messages,
-                             response.pending_messages, response.owner, response.update_date)
+                topic = {
+                    'name': topic['name'],
+                    'subscribers': response.subscribers,
+                    'messages': response.messages,
+                    'pending_messages': response.pending_messages,
+                    'owner': response.owner,
+                    'update_date': response.update_date.ToDatetime()
+                }
+                update_topic(topic['name'], topic)
     except grpc.RpcError as e:
         raise HTTPException(status_code=500, detail="Server not online!")
 
