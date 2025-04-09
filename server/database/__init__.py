@@ -26,7 +26,7 @@ for queue in queues:
         name = queue['name'] + '_replica'
     else:
         server_redirect = get_queue_server(queue['name'])
-        name = queue['name']
+        name = queue['name'].replace('_replica', '')
     try:
         client = get_grpc_client(server_redirect)
         response = client.updateTopic(
