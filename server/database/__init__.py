@@ -34,7 +34,7 @@ for queue in queues:
     try:
         if server_redirect[:server_redirect.find(':')]+':8000' in online_servers[:]:
             client = get_grpc_client(server_redirect)
-            response = client.updateTopic(
+            response = client.updateQueues(
                 mom_pb2.ReplicateQueueRequest(queue_name=name, owner=queue['owner']))
 
             if queue['update_date'] < response['update_date']:
