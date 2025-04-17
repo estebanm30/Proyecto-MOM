@@ -22,8 +22,8 @@ def get_queues(token: str):
 def get_grpc_client(server_address):
     print('------------------- Using gRPC client',
           server_address, '---------------------')
-    newServer_address = f"{server_address[:server_address.find(':')]}:50051"
-    channel = grpc.insecure_channel(newServer_address)
+    new_server_address = f"{server_address[:server_address.find(':')]}:50051"
+    channel = grpc.insecure_channel(new_server_address)
     return mom_pb2_grpc.QueueServiceStub(channel)
 
 
@@ -62,19 +62,19 @@ def create_queue(queue: QueueModel, token: str):
     if replica_server:
         try:
             print(
-                f"🔁 [REPLICACIÓN] Seleccionado servidor {replica_server} (de disponibles: {available_servers})")
+                f"🔁 REPLICATION SELECTED SERVER {replica_server} (CURRENT AVAILABLE: {available_servers})")
             stub = get_grpc_client(replica_server)
             response = stub.ReplicateQueue(mom_pb2.ReplicateQueueRequest(
                 queue_name=queue.name + '_replica',
                 owner=client
             ))
             print(
-                f"✅ [REPLICACIÓN EXITOSA] en {replica_server}: {response.message}")
+                f"✅ SUCCESS REPLICATION IN {replica_server}: {response.message}")
         except grpc.RpcError as e:
             print(
-                f"⚠️ [REPLICACIÓN FALLIDA] en {replica_server}: {e.details()}")
+                f"⚠️ REPLICATION FAILED {replica_server}: {e.details()}")
     else:
-        print("⚠️ [REPLICACIÓN] No hay servidores disponibles para replicación")
+        print("⚠️ NO AVAILABLE SERVERS TO REPLICATE")
 
     return {"message": f"Queue created in server {SERVER_ID} and replicated in {replica_server if replica_server else 'no server'}"}
 

@@ -14,13 +14,13 @@ def get_queue_server(queue_name: str):
 
 def get_all_queues():
     queues_path = "/mom_queues"
-    if zk.exists(queues_path):  # Verifica si el nodo existe
+    if zk.exists(queues_path):
         return zk.get_children(queues_path)
     return []
 
 def get_all_topics():
     topics_path = "/mom_topics"
-    if zk.exists(topics_path):  # Verifica si el nodo existe
+    if zk.exists(topics_path):
         return zk.get_children(topics_path)
     return []
 
