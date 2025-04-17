@@ -66,8 +66,8 @@ try:
 
         if response.status_code == 200:
             connection = response.json()
-            print("Connected to server")
-            print("Token:", connection["token"])
+            print(connection["message"])
+            print("Active Token:", connection["token"])
             token = connection["token"]
             stop_event.clear()
             listener_thread = threading.Thread(
