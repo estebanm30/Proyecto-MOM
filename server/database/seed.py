@@ -12,12 +12,11 @@ seed_clients = [
     {"user": "client6", "password": "1234"},
 ]
 
-# Insertar usuarios si no existen
 for client in seed_clients:
     if not clients_collection.find_one({"user": client["user"]}):
         clients_collection.insert_one(client)
-        print(f"Usuario {client['user']} insertado.")
+        print(f"User {client['user']} created.")
     else:
-        print(f"Usuario {client['user']} ya se encuentra en la db")
+        print(f"User {client['user']} not longer available in database")
 
-print("Seeding completado.")
+print("Seeding completed.")
