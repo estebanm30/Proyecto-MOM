@@ -3,7 +3,7 @@ import requests
 from database import insert_queue, find_queue, find_all_queues, update_queue, delete_queue
 from models import QueueModel
 from utils import verify_token, check_redirect_queues
-from zookeeper import zk, SERVER_ID, get_tokens, get_token_children, get_round_robin_replica
+from zk_utils import zk, SERVER_ID, get_tokens, get_token_children, get_round_robin_replica
 import mom_pb2
 import mom_pb2_grpc
 import grpc
