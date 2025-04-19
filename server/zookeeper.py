@@ -6,6 +6,8 @@ import sys
 import time
 import threading
 
+from server.controllers.queue_controller import redistribute_queue
+
 load_dotenv()
 ZOOKEEPER_ADDRESS = os.getenv("ZOOKEEPER_ADDRESS")
 SERVER_ID = os.getenv("SERVER_ID")
@@ -67,8 +69,10 @@ def check_for_long_failures(threshold=30):
             if now - t >= threshold:
                 print(f"🛠️ {server} ha estado caído más de {threshold}s. Redistribuyendo recursos...")
                 print("INICIANDO REDSISTRIBUCION")
-                print(f"Colas a redistribuir {get_queues_handled_by(server)}")
-                to_remove.append(server)
+                rq = get_queues_handled_by(server)
+                print(f"Colas a redistribuir {rq}")
+                redistribute(rq)
+                print("EXITO REDISTRIBUYENDO")
 
         for s in to_remove:
             del fallen_servers[s]
@@ -81,6 +85,33 @@ def get_tokens():
         children = zk.get_children(tokens_path)
         return [f"{child}" for child in children]
     return []
+
+
+def redistribute(rq):
+    all_queues = get_all_queues()
+    alive_servers = get_servers()
+    servers_queues = {}
+
+    for server in alive_servers:
+        server_queues = get_queues_handled_by(server)
+        servers_queues[server] = server_queues
+
+    for queue in rq:
+        is_replica = queue.endswith("_replica")
+        base_name = queue[:-8] if is_replica else queue
+
+        for candidate_server in alive_servers:
+            assigned_queues = server_queues[candidate_server]
+
+            if is_replica and base_name in assigned_queues:
+                continue
+            if not is_replica and f"{base_name}_replica" in assigned_queues:
+                continue
+            
+            redistribute_queue(candidate_server, queue)
+            print(f"Redistribuida '{queue}' a {candidate_server}")
+            break
+
 
 
 def get_topic_server(topic_name: str):
@@ -136,7 +167,7 @@ def get_queues_handled_by(server):
     for queue_name in zk.get_children("/mom_queues"):
         path = f"/mom_queues/{queue_name}"
         data = zk.get(path)[0].decode()
-        if data == server and queue_name.find("replica") == -1:
+        if data == server:
             queues.append(queue_name)
     return queues
 
@@ -169,6 +200,14 @@ def get_round_robin_replica(current_server_id):
         print(f"⚠️ Error en round robin selection: {str(e)}")
 
         return (candidates[0] if candidates else None), candidates
+
+
+def get_all_queues():
+    queues_path = "/mom_queues"
+    if zk.exists(queues_path):  # Verifica si el nodo existe
+        return zk.get_children(queues_path)
+    return []
+
 
 
 if is_leader:

@@ -79,6 +79,19 @@ def create_queue(queue: QueueModel, token: str):
     return {"message": f"Queue created in server {SERVER_ID} and replicated in {replica_server if replica_server else 'no server'}"}
 
 
+def redistribute_queue(redistribute_server, queue):
+    try:
+        print(f"🔁 [REPLICACIÓN] Seleccionado servidor {redistribute_server}")
+        stub = get_grpc_client(redistribute_server)
+        response = stub.ReplicateQueue(mom_pb2.ReplicateQueueRequest(
+            queue_name=queue + '_redistributed',
+            owner='red'
+        ))
+        zk.set(f"/mom_queues/{queue}", redistribute_server.encode())
+        print(f"✅ [REPLICACIÓN EXITOSA] en {redistribute_server}: {response.message}")
+    except grpc.RpcError as e:
+        print(f"⚠️ [REPLICACIÓN FALLIDA] en {redistribute_server}: {e.details()}")
+
 def subscribe_to_queue(queue_name: str, token: str):
     verify_token(token)
     server_redirect = check_redirect_queues(queue_name)
