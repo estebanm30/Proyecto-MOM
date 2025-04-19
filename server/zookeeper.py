@@ -6,7 +6,7 @@ import sys
 import time
 import threading
 
-from server.controllers.queue_controller import redistribute_queue
+from controllers.queue_controller import redistribute_queue
 
 load_dotenv()
 ZOOKEEPER_ADDRESS = os.getenv("ZOOKEEPER_ADDRESS")
