@@ -22,7 +22,7 @@ print(f"✅ SERVER REGISTERED IN ZOOKEPER: {SERVER_PATH}")
 
 
 fallen_servers = {}
-all_known = {}
+all_known = set()
 
 try:
     zk.create("/leader", value=SERVER_ID.encode(), ephemeral=True)
