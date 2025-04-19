@@ -3,6 +3,9 @@ from kazoo.client import KazooClient
 import os
 from dotenv import load_dotenv
 import sys
+import time
+import threading
+
 load_dotenv()
 ZOOKEEPER_ADDRESS = os.getenv("ZOOKEEPER_ADDRESS")
 SERVER_ID = os.getenv("SERVER_ID")
@@ -15,8 +18,41 @@ SERVER_PATH = f"/servers/{SERVER_ID}"
 zk.ensure_path("/servers")
 zk.create(SERVER_PATH, ephemeral=True, makepath=True)
 
-print(f"✅ Server registrado en Zookeeper: {SERVER_PATH}")
 
+def check_for_long_failures_loop():
+    while True:
+        check_for_long_failures()
+        time.sleep(10)
+
+
+threading.Thread(target=check_for_long_failures_loop, daemon=True).start()
+
+print(f"✅ SERVER REGISTERED IN ZOOKEPER: {SERVER_PATH}")
+
+
+fallen_servers = {}
+
+@zk.ChildrenWatch("/servers")
+def watch_servers(servers):
+    current_servers = set(servers)
+    all_known = set(fallen_servers.keys()).union(current_servers)
+
+    for server in all_known:
+        if server not in current_servers and server not in fallen_servers:
+            fallen_servers[server] = time.time()
+            print(f"⚠️ {server} FAILED AT {fallen_servers[server]}")
+
+        elif server in current_servers and server in fallen_servers:
+            print(f"✅ {server} IS BACK AFTER {time.time() - fallen_servers[server]}s")
+            del fallen_servers[server]
+
+def check_for_long_failures(threshold=60):
+    now = time.time()
+    for server, t in fallen_servers.items():
+        if now - t >= threshold:
+            print(f"🛠️ {server} HAS BEEN DOWN FOR MORE THAN {threshold}s. BALANCING...")
+            #REDISTRIBUTING
+            del fallen_servers[server]
 
 def get_tokens():
     tokens_path = "/tokens"
@@ -103,3 +139,11 @@ def get_round_robin_replica(current_server_id):
         print(f"⚠️ Error en round robin selection: {str(e)}")
 
         return (candidates[0] if candidates else None), candidates
+
+def check_for_long_failures(threshold=60):
+    now = time.time()
+    for server, t in fallen_servers.items():
+        if now - t >= threshold:
+            print(f"🛠️ {server} HAS BEEN DOWN FOR MORE THAN {threshold}s. BALANCING...")
+            # Aquí puedes llamar a tu lógica de redistribución
+
