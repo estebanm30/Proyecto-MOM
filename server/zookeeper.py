@@ -5,7 +5,6 @@ from dotenv import load_dotenv
 import sys
 import time
 import threading
-from redistribute import redistribute_q
 from server.controllers.queue_controller import redistribute_queue
 from zk_utils import get_all_queues, get_queues_handled_by, get_servers, get_zk_client
 
