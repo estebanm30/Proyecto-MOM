@@ -22,6 +22,7 @@ print(f"✅ SERVER REGISTERED IN ZOOKEPER: {SERVER_PATH}")
 
 
 fallen_servers = {}
+all_known = {}
 
 try:
     zk.create("/leader", value=SERVER_ID.encode(), ephemeral=True)
@@ -44,18 +45,17 @@ def start_failure_monitor(interval=10):
 @zk.ChildrenWatch("/servers")
 def watch_servers(servers):
     print(f"Lista de servidores actuales: {servers}")
-    current_set = set(servers)
-    all_known = set(fallen_servers.keys()).union(current_set)
+    all_known.add(set(servers))
 
     print(f"all known{all_known}")
 
     for sid in all_known:
         print(f"Comprobando servidor: {sid}")
-        if sid not in current_set and sid not in fallen_servers:
+        if sid not in servers and sid not in fallen_servers:
             fallen_servers[sid] = time.time()
             print(f"⚠️ {sid} cayó a las {fallen_servers[sid]}")
 
-        elif sid in current_set and sid in fallen_servers:
+        elif sid in servers and sid in fallen_servers:
             print(f"✅ {sid} volvió luego de {time.time() - fallen_servers[sid]}s")
             del fallen_servers[sid]
 
