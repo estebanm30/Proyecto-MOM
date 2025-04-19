@@ -59,14 +59,15 @@ def watch_servers(servers):
             print(f"✅ {sid} volvió luego de {time.time() - fallen_servers[sid]}s")
             del fallen_servers[sid]
 
-def check_for_long_failures(threshold=60):
+def check_for_long_failures(threshold=30):
     while True:
         now = time.time()
         to_remove = []
         for server, t in fallen_servers.items():
             if now - t >= threshold:
                 print(f"🛠️ {server} ha estado caído más de {threshold}s. Redistribuyendo recursos...")
-                # Aquí haces la redistribución
+                print("INICIANDO REDSISTRIBUCION")
+                print(f"Colas a redistribuir {get_queues_handled_by(server)}")
                 to_remove.append(server)
 
         for s in to_remove:
@@ -130,8 +131,17 @@ def get_zk_client():
     return zk
 
 
-def get_round_robin_replica(current_server_id):
+def get_queues_handled_by(server):
+    queues = []
+    for queue_name in zk.get_children("/mom_queues"):
+        path = f"/mom_queues/{queue_name}"
+        data = zk.get(path)[0].decode()
+        if data == server and queue_name.find("replica") == -1:
+            queues.append(queue_name)
+    return queues
 
+
+def get_round_robin_replica(current_server_id):
     all_servers = ["44.194.117.112:50051",
                    "44.214.10.205:50051", "52.86.105.153:50051"]
 
