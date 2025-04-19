@@ -18,41 +18,51 @@ SERVER_PATH = f"/servers/{SERVER_ID}"
 zk.ensure_path("/servers")
 zk.create(SERVER_PATH, ephemeral=True, makepath=True)
 
-
-def check_for_long_failures_loop():
-    while True:
-        check_for_long_failures()
-        time.sleep(10)
-
-
-threading.Thread(target=check_for_long_failures_loop, daemon=True).start()
-
 print(f"✅ SERVER REGISTERED IN ZOOKEPER: {SERVER_PATH}")
 
 
 fallen_servers = {}
 
+try:
+    zk.create("/leader", value=SERVER_ID.encode(), ephemeral=True)
+    print(f"👑 {SERVER_ID} es el líder.")
+    is_leader =  True
+except:
+    print(f"🔒 {SERVER_ID} no es el líder.")
+    is_leader = False
+
+def start_failure_monitor(interval=10):
+    def monitor():
+        while True:
+            check_for_long_failures()
+            time.sleep(interval)
+
+    thread = threading.Thread(target=monitor, daemon=True)
+    thread.start()
+
+
 @zk.ChildrenWatch("/servers")
 def watch_servers(servers):
-    current_servers = set(servers)
-    all_known = set(fallen_servers.keys()).union(current_servers)
+    current_set = set(servers)
+    all_known = set(fallen_servers.keys()).union(current_set)
 
-    for server in all_known:
-        if server not in current_servers and server not in fallen_servers:
-            fallen_servers[server] = time.time()
-            print(f"⚠️ {server} FAILED AT {fallen_servers[server]}")
+    for sid in all_known:
+        if sid not in current_set and sid not in fallen_servers:
+            fallen_servers[sid] = time.time()
+            print(f"⚠️ {sid} cayó a las {fallen_servers[sid]}")
 
-        elif server in current_servers and server in fallen_servers:
-            print(f"✅ {server} IS BACK AFTER {time.time() - fallen_servers[server]}s")
-            del fallen_servers[server]
+        elif sid in current_set and sid in fallen_servers:
+            print(f"✅ {sid} volvió luego de {time.time() - fallen_servers[sid]}s")
+            del fallen_servers[sid]
 
 def check_for_long_failures(threshold=60):
     now = time.time()
-    for server, t in fallen_servers.items():
+    for server, t in list(fallen_servers.items()):
         if now - t >= threshold:
-            print(f"🛠️ {server} HAS BEEN DOWN FOR MORE THAN {threshold}s. BALANCING...")
-            #REDISTRIBUTING
-            del fallen_servers[server]
+            print(f"🛠️ {server} ha estado caído más de {threshold}s. Iniciando redistribución...")
+            # Aquí haces la lógica de redistribución (ej: mover colas a otro servidor)
+            # del fallen_servers[server]
+
 
 def get_tokens():
     tokens_path = "/tokens"
@@ -140,10 +150,7 @@ def get_round_robin_replica(current_server_id):
 
         return (candidates[0] if candidates else None), candidates
 
-def check_for_long_failures(threshold=60):
-    now = time.time()
-    for server, t in fallen_servers.items():
-        if now - t >= threshold:
-            print(f"🛠️ {server} HAS BEEN DOWN FOR MORE THAN {threshold}s. BALANCING...")
-            # Aquí puedes llamar a tu lógica de redistribución
+if is_leader:
+    start_failure_monitor()
+
 
