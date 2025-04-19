@@ -45,7 +45,7 @@ def start_failure_monitor(interval=10):
 @zk.ChildrenWatch("/servers")
 def watch_servers(servers):
     print(f"Lista de servidores actuales: {servers}")
-    all_known.add(set(servers))
+    all_known.update(set(servers))
 
     print(f"all known{all_known}")
 
