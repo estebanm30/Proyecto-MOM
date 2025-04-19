@@ -5,8 +5,7 @@ from dotenv import load_dotenv
 import sys
 import time
 import threading
-
-from controllers.queue_controller import redistribute_queue
+from redistribute import redistribute_q
 
 load_dotenv()
 ZOOKEEPER_ADDRESS = os.getenv("ZOOKEEPER_ADDRESS")
@@ -71,7 +70,7 @@ def check_for_long_failures(threshold=30):
                 print("INICIANDO REDSISTRIBUCION")
                 rq = get_queues_handled_by(server)
                 print(f"Colas a redistribuir {rq}")
-                redistribute(rq)
+                redistribute_q(rq)
                 print("EXITO REDISTRIBUYENDO")
 
         for s in to_remove:
@@ -85,33 +84,6 @@ def get_tokens():
         children = zk.get_children(tokens_path)
         return [f"{child}" for child in children]
     return []
-
-
-def redistribute(rq):
-    all_queues = get_all_queues()
-    alive_servers = get_servers()
-    servers_queues = {}
-
-    for server in alive_servers:
-        server_queues = get_queues_handled_by(server)
-        servers_queues[server] = server_queues
-
-    for queue in rq:
-        is_replica = queue.endswith("_replica")
-        base_name = queue[:-8] if is_replica else queue
-
-        for candidate_server in alive_servers:
-            assigned_queues = server_queues[candidate_server]
-
-            if is_replica and base_name in assigned_queues:
-                continue
-            if not is_replica and f"{base_name}_replica" in assigned_queues:
-                continue
-            
-            redistribute_queue(candidate_server, queue)
-            print(f"Redistribuida '{queue}' a {candidate_server}")
-            break
-
 
 
 def get_topic_server(topic_name: str):
