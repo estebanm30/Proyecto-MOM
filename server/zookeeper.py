@@ -48,6 +48,7 @@ def watch_servers(servers):
     all_known = set(fallen_servers.keys()).union(current_set)
 
     for sid in all_known:
+        print(f"Comprobando servidor: {sid}")
         if sid not in current_set and sid not in fallen_servers:
             fallen_servers[sid] = time.time()
             print(f"⚠️ {sid} cayó a las {fallen_servers[sid]}")
