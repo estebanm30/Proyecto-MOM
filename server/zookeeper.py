@@ -47,6 +47,8 @@ def watch_servers(servers):
     current_set = set(servers)
     all_known = set(fallen_servers.keys()).union(current_set)
 
+    print(f"all known{all_known}")
+
     for sid in all_known:
         print(f"Comprobando servidor: {sid}")
         if sid not in current_set and sid not in fallen_servers:
