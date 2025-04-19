@@ -56,13 +56,19 @@ def watch_servers(servers):
             del fallen_servers[sid]
 
 def check_for_long_failures(threshold=60):
-    now = time.time()
-    for server, t in list(fallen_servers.items()):
-        if now - t >= threshold:
-            print(f"🛠️ {server} ha estado caído más de {threshold}s. Iniciando redistribución...")
-            # Aquí haces la lógica de redistribución (ej: mover colas a otro servidor)
-            # del fallen_servers[server]
+    while True:
+        now = time.time()
+        to_remove = []
+        for server, t in fallen_servers.items():
+            if now - t >= threshold:
+                print(f"🛠️ {server} ha estado caído más de {threshold}s. Redistribuyendo recursos...")
+                # Aquí haces la redistribución
+                to_remove.append(server)
 
+        for s in to_remove:
+            del fallen_servers[s]
+
+        time.sleep(5)
 
 def get_tokens():
     tokens_path = "/tokens"
@@ -150,7 +156,9 @@ def get_round_robin_replica(current_server_id):
 
         return (candidates[0] if candidates else None), candidates
 
+
 if is_leader:
-    start_failure_monitor()
+    t = threading.Thread(target=check_for_long_failures, daemon=True)
+    t.start()
 
 
