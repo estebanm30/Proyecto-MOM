@@ -109,7 +109,7 @@ def get_topics_handled_by(server):
         if data == server:
             topics.append(topic_name)
     for topic_name in zk.get_children("/mom_topics_replicas"):
-        path = f"/mom__topics/{topic_name}"
+        path = f"/mom_topics_replicas/{topic_name}"
         data = zk.get(path)[0].decode()
         if data == server:
             topics.append(topic_name)
