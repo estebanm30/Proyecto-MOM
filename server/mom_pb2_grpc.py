@@ -54,6 +54,31 @@ class TopicServiceStub(object):
                 request_serializer=mom__pb2.DeleteRequest.SerializeToString,
                 response_deserializer=mom__pb2.Response.FromString,
                 _registered_method=True)
+        self.ReplicateTopic = channel.unary_unary(
+                '/TopicService/ReplicateTopic',
+                request_serializer=mom__pb2.ReplicateTopicRequest.SerializeToString,
+                response_deserializer=mom__pb2.Response.FromString,
+                _registered_method=True)
+        self.ReplicateSubscription = channel.unary_unary(
+                '/TopicService/ReplicateSubscription',
+                request_serializer=mom__pb2.ReplicateSubscriptionRequest.SerializeToString,
+                response_deserializer=mom__pb2.Response.FromString,
+                _registered_method=True)
+        self.ReplicateMessage = channel.unary_unary(
+                '/TopicService/ReplicateMessage',
+                request_serializer=mom__pb2.ReplicateMessageRequest.SerializeToString,
+                response_deserializer=mom__pb2.Response.FromString,
+                _registered_method=True)
+        self.ReplicateUnsubscription = channel.unary_unary(
+                '/TopicService/ReplicateUnsubscription',
+                request_serializer=mom__pb2.ReplicateUnsubscriptionRequest.SerializeToString,
+                response_deserializer=mom__pb2.Response.FromString,
+                _registered_method=True)
+        self.ReplicateTopicDeletion = channel.unary_unary(
+                '/TopicService/ReplicateTopicDeletion',
+                request_serializer=mom__pb2.ReplicateTopicDeletionRequest.SerializeToString,
+                response_deserializer=mom__pb2.Response.FromString,
+                _registered_method=True)
 
 
 class TopicServiceServicer(object):
@@ -83,6 +108,36 @@ class TopicServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def ReplicateTopic(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ReplicateSubscription(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ReplicateMessage(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ReplicateUnsubscription(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ReplicateTopicDeletion(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_TopicServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -104,6 +159,31 @@ def add_TopicServiceServicer_to_server(servicer, server):
             'DeleteTopic': grpc.unary_unary_rpc_method_handler(
                     servicer.DeleteTopic,
                     request_deserializer=mom__pb2.DeleteRequest.FromString,
+                    response_serializer=mom__pb2.Response.SerializeToString,
+            ),
+            'ReplicateTopic': grpc.unary_unary_rpc_method_handler(
+                    servicer.ReplicateTopic,
+                    request_deserializer=mom__pb2.ReplicateTopicRequest.FromString,
+                    response_serializer=mom__pb2.Response.SerializeToString,
+            ),
+            'ReplicateSubscription': grpc.unary_unary_rpc_method_handler(
+                    servicer.ReplicateSubscription,
+                    request_deserializer=mom__pb2.ReplicateSubscriptionRequest.FromString,
+                    response_serializer=mom__pb2.Response.SerializeToString,
+            ),
+            'ReplicateMessage': grpc.unary_unary_rpc_method_handler(
+                    servicer.ReplicateMessage,
+                    request_deserializer=mom__pb2.ReplicateMessageRequest.FromString,
+                    response_serializer=mom__pb2.Response.SerializeToString,
+            ),
+            'ReplicateUnsubscription': grpc.unary_unary_rpc_method_handler(
+                    servicer.ReplicateUnsubscription,
+                    request_deserializer=mom__pb2.ReplicateUnsubscriptionRequest.FromString,
+                    response_serializer=mom__pb2.Response.SerializeToString,
+            ),
+            'ReplicateTopicDeletion': grpc.unary_unary_rpc_method_handler(
+                    servicer.ReplicateTopicDeletion,
+                    request_deserializer=mom__pb2.ReplicateTopicDeletionRequest.FromString,
                     response_serializer=mom__pb2.Response.SerializeToString,
             ),
     }
@@ -225,6 +305,141 @@ class TopicService(object):
             metadata,
             _registered_method=True)
 
+    @staticmethod
+    def ReplicateTopic(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/TopicService/ReplicateTopic',
+            mom__pb2.ReplicateTopicRequest.SerializeToString,
+            mom__pb2.Response.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def ReplicateSubscription(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/TopicService/ReplicateSubscription',
+            mom__pb2.ReplicateSubscriptionRequest.SerializeToString,
+            mom__pb2.Response.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def ReplicateMessage(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/TopicService/ReplicateMessage',
+            mom__pb2.ReplicateMessageRequest.SerializeToString,
+            mom__pb2.Response.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def ReplicateUnsubscription(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/TopicService/ReplicateUnsubscription',
+            mom__pb2.ReplicateUnsubscriptionRequest.SerializeToString,
+            mom__pb2.Response.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def ReplicateTopicDeletion(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/TopicService/ReplicateTopicDeletion',
+            mom__pb2.ReplicateTopicDeletionRequest.SerializeToString,
+            mom__pb2.Response.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
 
 class QueueServiceStub(object):
     """Missing associated documentation comment in .proto file."""
@@ -268,6 +483,36 @@ class QueueServiceStub(object):
         self.UnsubscribeQueue = channel.unary_unary(
                 '/QueueService/UnsubscribeQueue',
                 request_serializer=mom__pb2.QueueSubscriptionRequest.SerializeToString,
+                response_deserializer=mom__pb2.Response.FromString,
+                _registered_method=True)
+        self.ReplicateQueue = channel.unary_unary(
+                '/QueueService/ReplicateQueue',
+                request_serializer=mom__pb2.ReplicateQueueRequest.SerializeToString,
+                response_deserializer=mom__pb2.Response.FromString,
+                _registered_method=True)
+        self.ReplicateQueueSubscription = channel.unary_unary(
+                '/QueueService/ReplicateQueueSubscription',
+                request_serializer=mom__pb2.ReplicateQueueSubscriptionRequest.SerializeToString,
+                response_deserializer=mom__pb2.Response.FromString,
+                _registered_method=True)
+        self.ReplicateQueueMessage = channel.unary_unary(
+                '/QueueService/ReplicateQueueMessage',
+                request_serializer=mom__pb2.ReplicateQueueMessageRequest.SerializeToString,
+                response_deserializer=mom__pb2.Response.FromString,
+                _registered_method=True)
+        self.ReplicateQueueUnsubscription = channel.unary_unary(
+                '/QueueService/ReplicateQueueUnsubscription',
+                request_serializer=mom__pb2.ReplicateQueueUnsubscriptionRequest.SerializeToString,
+                response_deserializer=mom__pb2.Response.FromString,
+                _registered_method=True)
+        self.ReplicateQueueDeletion = channel.unary_unary(
+                '/QueueService/ReplicateQueueDeletion',
+                request_serializer=mom__pb2.ReplicateQueueDeletionRequest.SerializeToString,
+                response_deserializer=mom__pb2.Response.FromString,
+                _registered_method=True)
+        self.ReplicateMessageDeletion = channel.unary_unary(
+                '/QueueService/ReplicateMessageDeletion',
+                request_serializer=mom__pb2.ReplicateMessageDeletionRequest.SerializeToString,
                 response_deserializer=mom__pb2.Response.FromString,
                 _registered_method=True)
 
@@ -317,6 +562,42 @@ class QueueServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def ReplicateQueue(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ReplicateQueueSubscription(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ReplicateQueueMessage(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ReplicateQueueUnsubscription(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ReplicateQueueDeletion(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ReplicateMessageDeletion(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_QueueServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -353,6 +634,36 @@ def add_QueueServiceServicer_to_server(servicer, server):
             'UnsubscribeQueue': grpc.unary_unary_rpc_method_handler(
                     servicer.UnsubscribeQueue,
                     request_deserializer=mom__pb2.QueueSubscriptionRequest.FromString,
+                    response_serializer=mom__pb2.Response.SerializeToString,
+            ),
+            'ReplicateQueue': grpc.unary_unary_rpc_method_handler(
+                    servicer.ReplicateQueue,
+                    request_deserializer=mom__pb2.ReplicateQueueRequest.FromString,
+                    response_serializer=mom__pb2.Response.SerializeToString,
+            ),
+            'ReplicateQueueSubscription': grpc.unary_unary_rpc_method_handler(
+                    servicer.ReplicateQueueSubscription,
+                    request_deserializer=mom__pb2.ReplicateQueueSubscriptionRequest.FromString,
+                    response_serializer=mom__pb2.Response.SerializeToString,
+            ),
+            'ReplicateQueueMessage': grpc.unary_unary_rpc_method_handler(
+                    servicer.ReplicateQueueMessage,
+                    request_deserializer=mom__pb2.ReplicateQueueMessageRequest.FromString,
+                    response_serializer=mom__pb2.Response.SerializeToString,
+            ),
+            'ReplicateQueueUnsubscription': grpc.unary_unary_rpc_method_handler(
+                    servicer.ReplicateQueueUnsubscription,
+                    request_deserializer=mom__pb2.ReplicateQueueUnsubscriptionRequest.FromString,
+                    response_serializer=mom__pb2.Response.SerializeToString,
+            ),
+            'ReplicateQueueDeletion': grpc.unary_unary_rpc_method_handler(
+                    servicer.ReplicateQueueDeletion,
+                    request_deserializer=mom__pb2.ReplicateQueueDeletionRequest.FromString,
+                    response_serializer=mom__pb2.Response.SerializeToString,
+            ),
+            'ReplicateMessageDeletion': grpc.unary_unary_rpc_method_handler(
+                    servicer.ReplicateMessageDeletion,
+                    request_deserializer=mom__pb2.ReplicateMessageDeletionRequest.FromString,
                     response_serializer=mom__pb2.Response.SerializeToString,
             ),
     }
@@ -545,6 +856,283 @@ class QueueService(object):
             '/QueueService/UnsubscribeQueue',
             mom__pb2.QueueSubscriptionRequest.SerializeToString,
             mom__pb2.Response.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def ReplicateQueue(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/QueueService/ReplicateQueue',
+            mom__pb2.ReplicateQueueRequest.SerializeToString,
+            mom__pb2.Response.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def ReplicateQueueSubscription(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/QueueService/ReplicateQueueSubscription',
+            mom__pb2.ReplicateQueueSubscriptionRequest.SerializeToString,
+            mom__pb2.Response.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def ReplicateQueueMessage(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/QueueService/ReplicateQueueMessage',
+            mom__pb2.ReplicateQueueMessageRequest.SerializeToString,
+            mom__pb2.Response.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def ReplicateQueueUnsubscription(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/QueueService/ReplicateQueueUnsubscription',
+            mom__pb2.ReplicateQueueUnsubscriptionRequest.SerializeToString,
+            mom__pb2.Response.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def ReplicateQueueDeletion(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/QueueService/ReplicateQueueDeletion',
+            mom__pb2.ReplicateQueueDeletionRequest.SerializeToString,
+            mom__pb2.Response.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def ReplicateMessageDeletion(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/QueueService/ReplicateMessageDeletion',
+            mom__pb2.ReplicateMessageDeletionRequest.SerializeToString,
+            mom__pb2.Response.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+
+class OnBootingStub(object):
+    """Missing associated documentation comment in .proto file."""
+
+    def __init__(self, channel):
+        """Constructor.
+
+        Args:
+            channel: A grpc.Channel.
+        """
+        self.updateTopic = channel.unary_unary(
+                '/OnBooting/updateTopic',
+                request_serializer=mom__pb2.ReplicateTopicRequest.SerializeToString,
+                response_deserializer=mom__pb2.Topic.FromString,
+                _registered_method=True)
+        self.updateQueues = channel.unary_unary(
+                '/OnBooting/updateQueues',
+                request_serializer=mom__pb2.ReplicateQueueRequest.SerializeToString,
+                response_deserializer=mom__pb2.Queue.FromString,
+                _registered_method=True)
+
+
+class OnBootingServicer(object):
+    """Missing associated documentation comment in .proto file."""
+
+    def updateTopic(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def updateQueues(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+
+def add_OnBootingServicer_to_server(servicer, server):
+    rpc_method_handlers = {
+            'updateTopic': grpc.unary_unary_rpc_method_handler(
+                    servicer.updateTopic,
+                    request_deserializer=mom__pb2.ReplicateTopicRequest.FromString,
+                    response_serializer=mom__pb2.Topic.SerializeToString,
+            ),
+            'updateQueues': grpc.unary_unary_rpc_method_handler(
+                    servicer.updateQueues,
+                    request_deserializer=mom__pb2.ReplicateQueueRequest.FromString,
+                    response_serializer=mom__pb2.Queue.SerializeToString,
+            ),
+    }
+    generic_handler = grpc.method_handlers_generic_handler(
+            'OnBooting', rpc_method_handlers)
+    server.add_generic_rpc_handlers((generic_handler,))
+    server.add_registered_method_handlers('OnBooting', rpc_method_handlers)
+
+
+ # This class is part of an EXPERIMENTAL API.
+class OnBooting(object):
+    """Missing associated documentation comment in .proto file."""
+
+    @staticmethod
+    def updateTopic(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/OnBooting/updateTopic',
+            mom__pb2.ReplicateTopicRequest.SerializeToString,
+            mom__pb2.Topic.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def updateQueues(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/OnBooting/updateQueues',
+            mom__pb2.ReplicateQueueRequest.SerializeToString,
+            mom__pb2.Queue.FromString,
             options,
             channel_credentials,
             insecure,

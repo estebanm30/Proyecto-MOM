@@ -16,8 +16,8 @@ seed_clients = [
 for client in seed_clients:
     if not clients_collection.find_one({"user": client["user"]}):
         clients_collection.insert_one(client)
-        print(f"Usuario {client['user']} insertado.")
+        print(f"USER {client['user']} CREATED.")
     else:
-        print(f"Usuario {client['user']} ya se encuentra en la db")
+        print(f"USER {client['user']} ALREADY EXIST")
 
-print("Seeding completado.")
+print("SEEDING COMPLETED.")

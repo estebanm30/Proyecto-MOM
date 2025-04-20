@@ -9,7 +9,7 @@ def insert_queue(queue):
 
 
 def find_all_queues():
-    return collection.find({})
+    return list(collection.find({}))
 
 
 def find_queue(name):
