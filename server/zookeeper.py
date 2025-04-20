@@ -90,7 +90,7 @@ def redistribute_q(rq):
         base_name = queue[:-8] if is_replica else queue
 
         for candidate_server in alive_servers:
-            assigned_queues = server_queues[candidate_server]
+            assigned_queues = servers_queues[candidate_server]
 
             if is_replica and base_name in assigned_queues:
                 continue
