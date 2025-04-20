@@ -101,6 +101,5 @@ def close_connection():
     zk.stop()
     zk.close()
 
-# Inicia el monitor solo si es líder
 if is_leader:
     start_failure_monitor()

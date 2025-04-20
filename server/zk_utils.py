@@ -94,6 +94,11 @@ def get_queues_handled_by(server):
         data = zk.get(path)[0].decode()
         if data == server:
             queues.append(queue_name)
+    for queue_name in zk.get_children("/mom_queues_replicas"):
+        path = f"/mom_queues_replicas/{queue_name}"
+        data = zk.get(path)[0].decode()
+        if data == server:
+            queues.append(queue_name)
     return queues
 
 
