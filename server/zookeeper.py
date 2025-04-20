@@ -7,7 +7,7 @@ import time
 import threading
 from controllers.queue_controller import redistribute_queue
 from controllers.topic_controller import redistribute_topic
-from zk_utils import get_all_queues, get_queues_handled_by, get_servers, get_topics_handled_by, get_zk_client, get_server_id
+from zk_utils import clean_mongo_of_server, get_all_queues, get_queues_handled_by, get_servers, get_topics_handled_by, get_zk_client, get_server_id
 
 zk = get_zk_client()
 SERVER_ID = get_server_id()
@@ -48,6 +48,8 @@ def watch_servers(servers):
     for sid in all_known:
         if sid not in servers and sid not in fallen_servers:
             fallen_servers[sid] = time.time()
+            zk.ensure_path("/fallen_servers")
+            zk.create(f"/fallen_servers/{sid}", ephemeral=False, makepath=True)
             print(f"⚠️ {sid} IS NOT ONLINE!")
         elif sid in servers and sid in fallen_servers:
             print(f"✅ {sid} IS AGAIN ONLINE")
