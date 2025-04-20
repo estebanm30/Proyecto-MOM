@@ -31,15 +31,14 @@ except:
     print(f"🔒 {SERVER_ID} no es el líder.")
     is_leader = False
 
+
 def start_failure_monitor(interval=10):
     def monitor():
         while True:
             check_for_long_failures()
             time.sleep(interval)
-
     thread = threading.Thread(target=monitor, daemon=True)
     thread.start()
-
 
 @zk.ChildrenWatch("/servers")
 def watch_servers(servers):
@@ -58,23 +57,22 @@ def watch_servers(servers):
             print(f"✅ {sid} volvió luego de {time.time() - fallen_servers[sid]}s")
             del fallen_servers[sid]
 
-def check_for_long_failures(threshold=30):
-    while True:
-        now = time.time()
-        to_remove = []
-        for server, t in fallen_servers.items():
-            if now - t >= threshold:
-                print(f"🛠️ {server} ha estado caído más de {threshold}s. Redistribuyendo recursos...")
-                print("INICIANDO REDSISTRIBUCION")
-                rq = get_queues_handled_by(server)
-                print(f"Colas a redistribuir {rq}")
-                redistribute_q(rq)
-                print("EXITO REDISTRIBUYENDO")
+def check_for_long_failures(threshold=10):
+    now = time.time()
+    to_remove = []
+    for server, t in fallen_servers.items():
+        if now - t >= threshold:
+            print(f"🛠️ {server} ha estado caído más de {threshold}s. Redistribuyendo recursos...")
+            print("INICIANDO REDSISTRIBUCION")
+            rq = get_queues_handled_by(server)
+            print(f"Colas a redistribuir {rq}")
+            redistribute_q(rq)
+            print("EXITO REDISTRIBUYENDO")
 
-        for s in to_remove:
-            del fallen_servers[s]
+    for s in to_remove:
+        del fallen_servers[s]
 
-        time.sleep(5)
+    time.sleep(5)
 
 def redistribute_q(rq):
     all_queues = get_all_queues()
@@ -110,6 +108,6 @@ def close_connection():
 
 
 if is_leader:
-    threading.Thread(target=check_for_long_failures, daemon=True).start()
+    start_failure_monitor()
 
 
