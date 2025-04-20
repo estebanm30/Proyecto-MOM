@@ -35,8 +35,9 @@ except:
 def start_failure_monitor(interval=10):
     def monitor():
         while True:
-            check_for_long_failures()
-            time.sleep(interval)
+            if len(get_servers()) > 1:
+                check_for_long_failures()
+                time.sleep(interval)
     thread = threading.Thread(target=monitor, daemon=True)
     thread.start()
 
