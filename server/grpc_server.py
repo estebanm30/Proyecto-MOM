@@ -69,9 +69,10 @@ class MOMService(mom_pb2_grpc.TopicServiceServicer):
                     "owner": request.owner,
                     'update_date': datetime.now()
                 })
-                path = f"/mom_topics_replicas/{request.topic_name}"
-                zk.ensure_path(path)
-                zk.set(path, SERVER_ID.encode())
+                if request.topic_name.endswith("_replica"):
+                    path = f"/mom_topics_replicas/{request.topic_name}"
+                    zk.ensure_path(path)
+                    zk.set(path, SERVER_ID.encode())
 
             return mom_pb2.Response(message=f"Replicated topic {request.topic_name}")
         except Exception as e:
@@ -234,9 +235,12 @@ class QueueServiceHandler(mom_pb2_grpc.QueueServiceServicer):
                     "owner": request.owner,
                     'update_date': datetime.now()
                 })
-                path = f"/mom_queues_replicas/{request.queue_name}"
-                zk.ensure_path(path)
-                zk.set(path, SERVER_ID.encode())
+                if request.queue_name.endswith("_replica"):
+                    path = f"/mom_queues_replicas/{request.queue_name}"
+                    zk.ensure_path(path)
+                    zk.set(path, SERVER_ID.encode())
+
+
 
             return mom_pb2.Response(message=f"Replicated queue {request.queue_name}")
         except Exception as e:
