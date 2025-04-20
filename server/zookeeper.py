@@ -6,11 +6,10 @@ import sys
 import time
 import threading
 from controllers.queue_controller import redistribute_queue
-from zk_utils import get_all_queues, get_queues_handled_by, get_servers, get_zk_client
+from zk_utils import get_all_queues, get_queues_handled_by, get_servers, get_zk_client, get_server_id
 
-load_dotenv()
 zk = get_zk_client()
-SERVER_ID = os.getenv("SERVER_ID")
+SERVER_ID = get_server_id()
 
 port = int(sys.argv[1]) if len(sys.argv) > 1 else 8000
 SERVER_PATH = f"/servers/{SERVER_ID}"
@@ -60,22 +59,21 @@ def watch_servers(servers):
             del fallen_servers[sid]
 
 def check_for_long_failures(threshold=30):
-    while True:
-        now = time.time()
-        to_remove = []
-        for server, t in fallen_servers.items():
-            if now - t >= threshold:
-                print(f"🛠️ {server} ha estado caído más de {threshold}s. Redistribuyendo recursos...")
-                print("INICIANDO REDSISTRIBUCION")
-                rq = get_queues_handled_by(server)
-                print(f"Colas a redistribuir {rq}")
-                redistribute_q(rq)
-                print("EXITO REDISTRIBUYENDO")
+    now = time.time()
+    to_remove = []
+    for server, t in fallen_servers.items():
+        if now - t >= threshold:
+            print(f"🛠️ {server} ha estado caído más de {threshold}s. Redistribuyendo recursos...")
+            print("INICIANDO REDSISTRIBUCION")
+            rq = get_queues_handled_by(server)
+            print(f"Colas a redistribuir {rq}")
+            redistribute_q(rq)
+            print("EXITO REDISTRIBUYENDO")
 
-        for s in to_remove:
-            del fallen_servers[s]
+    for s in to_remove:
+        del fallen_servers[s]
 
-        time.sleep(5)
+    time.sleep(5)
 
 def redistribute_q(rq):
     all_queues = get_all_queues()
@@ -111,7 +109,10 @@ def close_connection():
 
 
 if is_leader:
-    t = threading.Thread(target=check_for_long_failures, daemon=True)
-    t.start()
+    def periodic_failure_check():
+        while True:
+            check_for_long_failures()
+            time.sleep(5)
+    threading.Thread(target=periodic_failure_check, daemon=True).start()
 
 

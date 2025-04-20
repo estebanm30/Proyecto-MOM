@@ -4,11 +4,15 @@ from dotenv import load_dotenv
 
 load_dotenv()
 ZOOKEEPER_ADDRESS = os.getenv("ZOOKEEPER_ADDRESS")
+SERVER_ID = os.getenv("SERVER_ID")
 zk = KazooClient(hosts=ZOOKEEPER_ADDRESS)
 zk.start()
 
 def get_zk_client():
     return zk
+
+def get_server_id():
+    return SERVER_ID
 
 def get_tokens():
     tokens_path = "/tokens"

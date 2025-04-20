@@ -4,11 +4,13 @@ from fastapi import HTTPException, BackgroundTasks
 from database import insert_topic, find_all_topics, find_topic, update_topic, delete_topic
 from models import TopicModel
 from utils import verify_token, check_redirect
-from zk_utils import zk, SERVER_ID, get_token_children, get_topic_server, get_round_robin_replica
+from zk_utils import zk, get_server_id, get_token_children, get_topic_server, get_round_robin_replica
 import mom_pb2
 import mom_pb2_grpc
 from datetime import datetime
 
+
+SERVER_ID = get_server_id()
 
 def get_topics(token: str):
     verify_token(token)
