@@ -49,9 +49,6 @@ def watch_servers(servers):
     for sid in all_known:
         if sid not in servers and sid not in fallen_servers:
             fallen_servers[sid] = time.time()
-            fallen_path = f"/fallen_servers/{sid}"
-            if not zk.exists(fallen_path):
-                zk.create(fallen_path, ephemeral=False, makepath=True)
             print(f"⚠️ {sid} IS NOT ONLINE!")
         elif sid in servers and sid in fallen_servers:
             print(f"✅ {sid} IS AGAIN ONLINE")
@@ -61,6 +58,9 @@ def check_for_long_failures(threshold=10):
     now = time.time()
     for server, t in list(fallen_servers.items()):
         if now - t >= threshold:
+            fallen_path = f"/fallen_servers/{server}"
+            if not zk.exists(fallen_path):
+                zk.create(fallen_path, ephemeral=False, makepath=True)
             print(f"🛠️ {server} HAS BEEN DOWN FOR MORE THAN {threshold}s. REDISTRIBUTION IN PROGRESS...")
             rq = get_queues_handled_by(server)
             rt = get_topics_handled_by(server)
