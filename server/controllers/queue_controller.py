@@ -89,10 +89,21 @@ def redistribute_queue(redistribute_server, queue):
             queue_name=queue,
             owner='red'
         ))
-        zk.set(f"/mom_queues/{queue}", redistribute_server.encode())
+
+        path_primary = f"/mom_queues/{queue}"
+        path_replica = f"/mom_queues_replicas/{queue}"
+
+        if zk.exists(path_primary):
+            zk.set(path_primary, redistribute_server.encode())
+        elif zk.exists(path_replica):
+            zk.set(path_replica, redistribute_server.encode())
+        else:
+            print(f"⚠️ La cola '{queue}' no existe en /mom_queues ni en /mom_queues_replicas.")
+
         print(f"✅ [REPLICACIÓN EXITOSA] en {redistribute_server}: {response.message}")
     except grpc.RpcError as e:
         print(f"⚠️ [REPLICACIÓN FALLIDA] en {redistribute_server}: {e.details()}")
+
 
 def subscribe_to_queue(queue_name: str, token: str):
     verify_token(token)
