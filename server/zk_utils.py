@@ -55,7 +55,7 @@ def get_round_robin_replica(current_server_id):
 
         return candidates[next_index], candidates
     except Exception as e:
-        print(f"⚠️ Error en round robin selection: {str(e)}")
+        print(f"⚠️ ERROR IN ROUND ROBIN SELECTION: {str(e)}")
 
         return (candidates[0] if candidates else None), candidates
     
@@ -101,6 +101,19 @@ def get_queues_handled_by(server):
             queues.append(queue_name)
     return queues
 
+def get_topics_handled_by(server):
+    topics = []
+    for topic_name in zk.get_children("/mom_topics"):
+        path = f"/mom_topics/{topic_name}"
+        data = zk.get(path)[0].decode()
+        if data == server:
+            topics.append(topic_name)
+    for topic_name in zk.get_children("/mom_topics_replicas"):
+        path = f"/mom__topics/{topic_name}"
+        data = zk.get(path)[0].decode()
+        if data == server:
+            topics.append(topic_name)
+    return topics
 
 def get_all_queues():
     queues_path = "/mom_queues"

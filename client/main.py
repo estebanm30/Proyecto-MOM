@@ -109,7 +109,7 @@ try:
                                                      )
                             print("\033c", end="")
                             print(server_address, "server selected")
-                            print(colored(response.json(), "yellow"))
+                            print(colored(response.json()["message"], "yellow"))
 
                         elif option == "2":
                             queue_name = input("Enter the queue name: ")
@@ -124,7 +124,7 @@ try:
                             if response.status_code == 500:
                                 response = requests.post(f"http://{server_address}/queue/send/",
                                                          params={"queue_name": queue_name + '_replica', "message": message, "token": token})
-                            print(colored(response.json(), "yellow"))
+                            print(colored(response.json()["message"], "yellow"))
 
                         elif option == "3":
                             queue_name = input(
@@ -139,7 +139,7 @@ try:
                             if response.status_code == 500:
                                 response = requests.get(f"http://{server_address}/queue/receive/",
                                                         params={"queue_name": queue_name + '_replica', "token": token})
-                            print(colored(response.json(), "green"))
+                            print(colored(response.json()["message"], "green"))
 
                         elif option == "4":
                             queue_name = input(
@@ -153,7 +153,7 @@ try:
                             if response.status_code == 500:
                                 response = requests.delete(f"http://{server_address}/queue/",
                                                            params={"queue_name": queue_name + '_replica', "token": token})
-                            print(colored(response.json(), "yellow"))
+                            print(colored(response.json()["message"], "yellow"))
 
                         elif option == "5":
                             queue_name = input(
@@ -167,7 +167,7 @@ try:
                             if response.status_code == 500:
                                 response = requests.put(f"http://{server_address}/queue/subscribe/",
                                                         params={"queue_name": queue_name + '_replica', "token": token})
-                            print(colored(response.json(), "yellow"))
+                            print(colored(response.json()["message"], "yellow"))
 
                         elif option == "6":
                             queue_name = input(
@@ -181,7 +181,7 @@ try:
                             if response.status_code == 500:
                                 response = requests.put(f"http://{server_address}/queue/unsubscribe/",
                                                         params={"queue_name": queue_name + '_replica', "token": token})
-                            print(colored(response.json(), "yellow"))
+                            print(colored(response.json()["message"], "yellow"))
 
                         elif option == "7":
                             print("\033c", end="")
@@ -222,7 +222,7 @@ try:
                             )
                             print("\033c", end="")
                             print(server_address, "server selected")
-                            print(colored(response.json(), "yellow"))
+                            print(colored(response.json()["message"], "yellow"))
 
                         elif option == "2":
                             topic_name = input("Enter the topic name: ")
@@ -236,7 +236,7 @@ try:
                             if response.status_code == 500:
                                 response = requests.put(f"http://{server_address}/topic/subscribe/",
                                                         params={"topic_name": topic_name + '_replica', "token": token})
-                            print(colored(response.json(), "yellow"))
+                            print(colored(response.json()["message"], "yellow"))
 
                         elif option == "3":
                             topic_name = input("Enter the topic name: ")
@@ -251,7 +251,7 @@ try:
                             if response.status_code == 500:
                                 response = requests.post(f"http://{server_address}/topic/publish/",
                                                          params={"topic_name": topic_name + '_replica', "message": message, "token": token})
-                            print(colored(response.json(), "yellow"))
+                            print(colored(response.json()["message"], "yellow"))
 
                         elif option == "4":
                             topic_name = input("Enter the topic name: ")
@@ -265,7 +265,7 @@ try:
                             if response.status_code == 500:
                                 response = requests.put(f"http://{server_address}/topic/unsubscribe/",
                                                         params={"topic_name": topic_name + '_replica', "token": token})
-                            print(colored(response.json(), "yellow"))
+                            print(colored(response.json()["message"], "yellow"))
 
                         elif option == "5":
                             topic_name = input("Enter the topic name: ")
@@ -279,7 +279,7 @@ try:
                             if response.status_code == 500:
                                 response = requests.delete(
                                     f"http://{server_address}/topic/", params={"topic_name": topic_name + '_replica', "token": token})
-                            print(colored(response.json(), "yellow"))
+                            print(colored(response.json()["message"], "yellow"))
 
                         elif option == "6":
                             print("\033c", end="")

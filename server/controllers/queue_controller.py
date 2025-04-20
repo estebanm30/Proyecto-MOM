@@ -64,26 +64,26 @@ def create_queue(queue: QueueModel, token: str):
     if replica_server:
         try:
             print(
-                f"🔁 [REPLICACIÓN] Seleccionado servidor {replica_server} (de disponibles: {available_servers})")
+                f"🔁 [REPLICATION] SERVER SELECTED {replica_server} (AVAILABLE SERVERS: {available_servers})")
             stub = get_grpc_client(replica_server)
             response = stub.ReplicateQueue(mom_pb2.ReplicateQueueRequest(
                 queue_name=queue.name + '_replica',
                 owner=client
             ))
             print(
-                f"✅ [REPLICACIÓN EXITOSA] en {replica_server}: {response.message}")
+                f"✅ [SUCCESS IN REPLICATION] IN {replica_server}: {response.message}")
         except grpc.RpcError as e:
             print(
-                f"⚠️ [REPLICACIÓN FALLIDA] en {replica_server}: {e.details()}")
+                f"⚠️ [FAIL IN REPLICATION] IN {replica_server}: {e.details()}")
     else:
-        print("⚠️ [REPLICACIÓN] No hay servidores disponibles para replicación")
+        print("⚠️ [REPLICATION] NO AVAILABLE SERVERS TO REPLICATE")
 
     return {"message": f"Queue created in server {SERVER_ID} and replicated in {replica_server if replica_server else 'no server'}"}
 
 
 def redistribute_queue(redistribute_server, queue):
     try:
-        print(f"🔁 [REPLICACIÓN] Seleccionado servidor {redistribute_server}")
+        print(f"🔁 [REDISTRIBUTION] SELECTED SERVER {redistribute_server}")
         stub = get_grpc_client(redistribute_server)
         response = stub.ReplicateQueue(mom_pb2.ReplicateQueueRequest(
             queue_name=queue,
@@ -98,11 +98,11 @@ def redistribute_queue(redistribute_server, queue):
         elif zk.exists(path_replica):
             zk.set(path_replica, redistribute_server.encode())
         else:
-            print(f"⚠️ La cola '{queue}' no existe en /mom_queues ni en /mom_queues_replicas.")
+            print(f"⚠️ The Queue '{queue}' does not exist in /mom_queues or /mom_queues_replicas.")
 
-        print(f"✅ [REPLICACIÓN EXITOSA] en {redistribute_server}: {response.message}")
+        print(f"✅ [SUCCESS REDISTRIBUTING] IN {redistribute_server}: {response.message}")
     except grpc.RpcError as e:
-        print(f"⚠️ [REPLICACIÓN FALLIDA] en {redistribute_server}: {e.details()}")
+        print(f"⚠️ [SUCCESS REDISTRIBUTING] IN {redistribute_server}: {e.details()}")
 
 
 def subscribe_to_queue(queue_name: str, token: str):

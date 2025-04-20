@@ -52,21 +52,44 @@ def create_topic(topic: TopicModel, token: str):
     if replica_server:
         try:
             print(
-                f"🔁 [REPLICACIÓN] Seleccionado servidor {replica_server} (de disponibles: {available_servers})")
+                f"🔁 [REPLICATION] SERVER SELECTED {replica_server} (AVAILABLE SERVERS: {available_servers})")
             stub = get_grpc_client(replica_server)
             response = stub.ReplicateTopic(mom_pb2.ReplicateTopicRequest(
                 topic_name=topic.name + "_replica",
                 owner=client
             ))
             print(
-                f"✅ [REPLICACIÓN EXITOSA] en {replica_server}: {response.message}")
+                f"✅ [SUCCESS REPLICATION] IN {replica_server}: {response.message}")
         except grpc.RpcError as e:
             print(
-                f"⚠️ [REPLICACIÓN FALLIDA] en {replica_server}: {e.details()}")
+                f"⚠️ [FAIL REPLICATION] IN {replica_server}: {e.details()}")
     else:
-        print("⚠️ [REPLICACIÓN] No hay servidores disponibles para replicación")
+        print("⚠️ [REPLICATION] No available servers to replicate")
 
-    return {"message": f"Tópico creado en servidor {SERVER_ID} y replicado en {replica_server if replica_server else 'ningún servidor'}"}
+    return {"message": f"Topic created in server {SERVER_ID} and replicated in {replica_server if replica_server else 'Cannot find a server'}"}
+
+def redistribute_topic(redistribute_server, topic):
+    try:
+        print(f"🔁 [REDISTRIBUTION] SELECTED SERVER {redistribute_server}")
+        stub = get_grpc_client(redistribute_server)
+        response = stub.ReplicateTopic(mom_pb2.ReplicateTopicRequest(
+            topic_name=topic,
+            owner='red'
+        ))
+
+        path_primary = f"/mom_topics/{topic}"
+        path_replica = f"/mom_topics_replicas/{topic}"
+
+        if zk.exists(path_primary):
+            zk.set(path_primary, redistribute_server.encode())
+        elif zk.exists(path_replica):
+            zk.set(path_replica, redistribute_server.encode())
+        else:
+            print(f"⚠️ The Topic '{topic}' does not exist in /mom_topics or /mom_topics_replicas.")
+
+        print(f"✅ [SUCCESSFUL REDISRIBUTION] IN {redistribute_server}: {response.message}")
+    except grpc.RpcError as e:
+        print(f"⚠️ [FAILED REDISTRIBUTION] IN {redistribute_server}: {e.details()}")
 
 
 def get_grpc_client(server_address):
