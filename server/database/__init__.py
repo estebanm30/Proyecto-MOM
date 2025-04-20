@@ -6,7 +6,7 @@ from .queues_queries import insert_queue, find_queue, find_all_queues, update_qu
 from .topics_queries import insert_topic, find_all_topics, find_topic, update_topic, delete_topic
 from .clients_queries import delete_client, update_client, find_client, find_all_clients
 import grpc
-from zookeeper import get_queue_server, get_topic_server, get_servers, zk
+from zk_utils import get_queue_server, get_topic_server, get_servers, zk
 
 
 def get_grpc_client(server_address):
