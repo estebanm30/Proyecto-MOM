@@ -91,6 +91,8 @@ def redistribute_q(rq):
             redistribute_queue(candidate_server, queue)
             print(f"Redistribuida '{queue}' a {candidate_server}")
             break
+        else:
+            print(f"⚠️ No se pudo redistribuir '{queue}' — no hay servidores válidos")
 
 def close_connection():
     if zk.exists(SERVER_PATH):
