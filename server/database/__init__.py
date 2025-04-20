@@ -6,7 +6,7 @@ from .queues_queries import insert_queue, find_queue, find_all_queues, update_qu
 from .topics_queries import insert_topic, find_all_topics, find_topic, update_topic, delete_topic
 from .clients_queries import delete_client, update_client, find_client, find_all_clients
 import grpc
-from zk_utils import get_queue_server, get_server_id, get_topic_server, get_servers, zk
+from zk_utils import get_queue_server, get_topic_server, get_servers, zk
 
 
 def get_grpc_client(server_address):
@@ -15,22 +15,6 @@ def get_grpc_client(server_address):
     newServer_address = f"{server_address[:server_address.find(':')]}:50051"
     channel = grpc.insecure_channel(newServer_address)
     return mom_pb2_grpc.OnBootingStub(channel)
-
-
-SERVER_ID = get_server_id()
-
-fallen_path = f"/fallen_servers/{SERVER_ID}"
-if zk.exists(fallen_path):
-    print(f"🧹 FALLEN SERVER. CLEANING DATA...")
-
-    for q in find_all_queues():
-        delete_queue(q['name'])
-
-    for t in find_all_topics():
-        delete_topic(t['name'])
-
-    zk.delete(fallen_path)
-    print("✅ OLD DATA DELETED.")
 
 queues = find_all_queues()
 topics = find_all_topics()
