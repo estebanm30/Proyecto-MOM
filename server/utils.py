@@ -1,9 +1,9 @@
 from fastapi import HTTPException
-from zookeeper import get_tokens
-from zookeeper import get_topic_server
+from zk_utils import get_tokens
+from zk_utils import get_topic_server
 from database import find_topic
 from database import find_queue
-from zookeeper import get_queue_server
+from zk_utils import get_queue_server
 
 def verify_token(token: str):
     tokens = get_tokens()
