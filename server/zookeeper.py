@@ -63,7 +63,7 @@ def check_for_long_failures(threshold=10):
             print("INICIANDO REDISTRIBUCION")
             rq = get_queues_handled_by(server)
             print(f"Colas a redistribuir {rq}")
-            #redistribute_q(rq)
+            redistribute_q(rq)
             print("EXITO REDISTRIBUYENDO")
             # Marcar como manejado
             del fallen_servers[server]

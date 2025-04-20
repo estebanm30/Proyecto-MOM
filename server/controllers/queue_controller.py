@@ -86,7 +86,7 @@ def redistribute_queue(redistribute_server, queue):
         print(f"🔁 [REPLICACIÓN] Seleccionado servidor {redistribute_server}")
         stub = get_grpc_client(redistribute_server)
         response = stub.ReplicateQueue(mom_pb2.ReplicateQueueRequest(
-            queue_name=queue + '_redistributed',
+            queue_name=queue,
             owner='red'
         ))
         zk.set(f"/mom_queues/{queue}", redistribute_server.encode())
