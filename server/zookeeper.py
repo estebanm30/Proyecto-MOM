@@ -59,21 +59,22 @@ def watch_servers(servers):
             del fallen_servers[sid]
 
 def check_for_long_failures(threshold=30):
-    now = time.time()
-    to_remove = []
-    for server, t in fallen_servers.items():
-        if now - t >= threshold:
-            print(f"🛠️ {server} ha estado caído más de {threshold}s. Redistribuyendo recursos...")
-            print("INICIANDO REDSISTRIBUCION")
-            rq = get_queues_handled_by(server)
-            print(f"Colas a redistribuir {rq}")
-            redistribute_q(rq)
-            print("EXITO REDISTRIBUYENDO")
+    while True:
+        now = time.time()
+        to_remove = []
+        for server, t in fallen_servers.items():
+            if now - t >= threshold:
+                print(f"🛠️ {server} ha estado caído más de {threshold}s. Redistribuyendo recursos...")
+                print("INICIANDO REDSISTRIBUCION")
+                rq = get_queues_handled_by(server)
+                print(f"Colas a redistribuir {rq}")
+                redistribute_q(rq)
+                print("EXITO REDISTRIBUYENDO")
 
-    for s in to_remove:
-        del fallen_servers[s]
+        for s in to_remove:
+            del fallen_servers[s]
 
-    time.sleep(5)
+        time.sleep(5)
 
 def redistribute_q(rq):
     all_queues = get_all_queues()
@@ -109,10 +110,6 @@ def close_connection():
 
 
 if is_leader:
-    def periodic_failure_check():
-        while True:
-            check_for_long_failures()
-            time.sleep(5)
-    threading.Thread(target=periodic_failure_check, daemon=True).start()
+    threading.Thread(target=check_for_long_failures, daemon=True).start()
 
 
