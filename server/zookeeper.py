@@ -16,6 +16,7 @@ port = int(sys.argv[1]) if len(sys.argv) > 1 else 8000
 SERVER_PATH = f"/servers/{SERVER_ID}"
 
 zk.ensure_path("/servers")
+zk.ensure_path("/fallen_servers")
 zk.create(SERVER_PATH, ephemeral=True, makepath=True)
 
 print(f"✅ SERVER REGISTERED IN ZOOKEPER: {SERVER_PATH}")
@@ -48,8 +49,9 @@ def watch_servers(servers):
     for sid in all_known:
         if sid not in servers and sid not in fallen_servers:
             fallen_servers[sid] = time.time()
-            zk.ensure_path("/fallen_servers")
-            zk.create(f"/fallen_servers/{sid}", ephemeral=False, makepath=True)
+            fallen_path = f"/fallen_servers/{sid}"
+            if not zk.exists(fallen_path):
+                zk.create(fallen_path, ephemeral=False, makepath=True)
             print(f"⚠️ {sid} IS NOT ONLINE!")
         elif sid in servers and sid in fallen_servers:
             print(f"✅ {sid} IS AGAIN ONLINE")
