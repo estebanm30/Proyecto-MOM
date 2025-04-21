@@ -224,6 +224,18 @@ Por lo tanto, el servidor reintegrado se une al clúster en estado limpio, esper
 - No se pierda información ni se dupliquen mensajes.
 - El sistema se mantenga coherente y funcional en todo momento.
 
+
+### Replicación
+
+En este sistema se implementó un mecanismo de replicación eventual, una estrategia que permite mayor flexibilidad y tolerancia a fallos en entornos distribuidos. La replicación eventual asegura que, con el tiempo, todos los nodos del sistema converjan hacia un mismo estado, sin necesidad de sincronización inmediata, lo cual es ideal para aplicaciones donde la disponibilidad y la escalabilidad son prioridades.
+
+La replicación se integró a través de llamadas gRPC definidas en el archivo momo.proto. Cada vez que se ejecuta un evento significativo —como la creación, publicación o eliminación de colas o tópicos— se realiza una llamada remota a un servicio de replicación que indica qué operación debe replicarse y en qué servidor. Esta lógica permite que los cambios realizados en un nodo se repliquen en la base de datos de otro servidor, asegurando la persistencia y consistencia de los datos.
+
+Para distribuir el tráfico y evitar sobrecargas, si varios servidores están activos, el sistema selecciona uno de ellos de manera alterna para llevar a cabo la replicación, logrando un balance de carga simple pero efectivo. Además, se utilizó ZooKeeper para coordinar la replicación, donde se definió una ruta específica (replica) que facilita la organización y descubrimiento de los nodos involucrados en el proceso.
+
+En situaciones donde un servidor se desconecta y luego se reconecta, el sistema verifica si existen versiones replicadas en su base de datos. Si es así, sincroniza la información comparando las fechas de actualización de cada entidad para determinar si debe realizar una actualización local o enviar sus propios datos a los otros servidores. Este proceso garantiza una sincronización eficiente entre nodos, incluso después de interrupciones, contribuyendo a la robustez y resiliencia del sistema distribuido.
+
+
 ## Generalidad Arquitectonicas del proyecto
 
 ![Image](https://github.com/user-attachments/assets/a3683fe3-42f7-4886-918b-8ff99a17499f)
