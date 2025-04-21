@@ -222,20 +222,21 @@ Por lo tanto, el servidor reintegrado se une al clúster en estado limpio, esper
 
 ## Generalidad Arquitectonicas del proyecto
 
+![Image](https://github.com/user-attachments/assets/a3683fe3-42f7-4886-918b-8ff99a17499f)
+
 El diagrama representa una arquitectura distribuida que simula un sistema MOM (Message-Oriented Middleware). Los clientes se conectan primero a Zookeeper, que actúa como coordinador central para gestionar la disponibilidad y descubrimiento de los servidores. Luego, los mensajes se enrutan hacia uno de los tres servidores disponibles (Server1, Server2 y Server3), cada uno con su propia base de datos para almacenamiento local y procesamiento independiente. Esta estructura permite escalabilidad, tolerancia a fallos y una comunicación eficiente entre componentes desacoplados.
 
 ## Componente de colas
 
-El diagrama muestra el funcionamiento de un sistema de colas FIFO (First In, First Out) dentro de una arquitectura de tipo MOM (Message-Oriented Middleware). Los Message Producers (productores de mensajes) generan mensajes que son enviados a una cola central, donde se almacenan en el orden en que llegan. Los Message Consumers (consumidores de mensajes) luego extraen los mensajes de la cola en ese mismo orden para procesarlos. Este mecanismo desacopla la producción y el consumo de mensajes, permitiendo mayor flexibilidad, escalabilidad y tolerancia a fallos en sistemas distribuidos.
-
 ![Image](https://github.com/user-attachments/assets/032ffc26-c969-49fb-b33a-c7c077fe4e66)
+
+El diagrama muestra el funcionamiento de un sistema de colas FIFO (First In, First Out) dentro de una arquitectura de tipo MOM (Message-Oriented Middleware). Los Message Producers (productores de mensajes) generan mensajes que son enviados a una cola central, donde se almacenan en el orden en que llegan. Los Message Consumers (consumidores de mensajes) luego extraen los mensajes de la cola en ese mismo orden para procesarlos. Este mecanismo desacopla la producción y el consumo de mensajes, permitiendo mayor flexibilidad, escalabilidad y tolerancia a fallos en sistemas distribuidos.
 
 ## Componente de tópicos
 
-Este diagrama representa el modelo de comunicación Publish/Subscribe (publicar/suscribirse), típico en arquitecturas orientadas a mensajes. En este esquema, los Publishers envían mensajes a un Topic (tópico) sin conocer quién los recibirá. Por su parte, los Subscribers se suscriben al tópico y reciben automáticamente todos los mensajes publicados en él. Esta arquitectura permite una comunicación desacoplada, escalable y eficiente, ideal para sistemas con múltiples emisores y receptores que deben compartir información de forma simultánea.
-
 ![Image](https://github.com/user-attachments/assets/52432901-6197-4323-bb82-1d692d61bda9)
 
+Este diagrama representa el modelo de comunicación Publish/Subscribe (publicar/suscribirse), típico en arquitecturas orientadas a mensajes. En este esquema, los Publishers envían mensajes a un Topic (tópico) sin conocer quién los recibirá. Por su parte, los Subscribers se suscriben al tópico y reciben automáticamente todos los mensajes publicados en él. Esta arquitectura permite una comunicación desacoplada, escalable y eficiente, ideal para sistemas con múltiples emisores y receptores que deben compartir información de forma simultánea.
 
 ### 3. Ambiente de desarrollo
 
@@ -247,6 +248,8 @@ Este diagrama representa el modelo de comunicación Publish/Subscribe (publicar/
 a. Crear una instancia con Ubuntu en AWS
 
 b. Editar las reglas de entrada de la instancia y habilitar los siguientes puertos:
+
+![Image](https://github.com/user-attachments/assets/046e3577-d976-47ad-afbc-b9f57fd155e1)
 
 c. Ingresar a la MV ya sea por la terminal integrada en AWS o por SSH y ejecutar los siguientes comandos:
 
@@ -317,6 +320,8 @@ python3 main.py
 a. Crear una instancia con Ubuntu en AWS
 
 b. Editar las reglas de entrada de la instancia y habilitar los siguientes puertos:
+
+![Image](https://github.com/user-attachments/assets/4ec2dbf9-68ad-4d73-8b96-e96fbd4066d1)
 
 c. Ingresar a la MV ya sea por la terminal integrada en AWS o por SSH y ejecutar los siguientes comandos:
 
