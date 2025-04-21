@@ -228,9 +228,13 @@ El diagrama representa una arquitectura distribuida que simula un sistema MOM (M
 
 El diagrama muestra el funcionamiento de un sistema de colas FIFO (First In, First Out) dentro de una arquitectura de tipo MOM (Message-Oriented Middleware). Los Message Producers (productores de mensajes) generan mensajes que son enviados a una cola central, donde se almacenan en el orden en que llegan. Los Message Consumers (consumidores de mensajes) luego extraen los mensajes de la cola en ese mismo orden para procesarlos. Este mecanismo desacopla la producción y el consumo de mensajes, permitiendo mayor flexibilidad, escalabilidad y tolerancia a fallos en sistemas distribuidos.
 
+![Image](https://github.com/user-attachments/assets/032ffc26-c969-49fb-b33a-c7c077fe4e66)
+
 ## Componente de tópicos
 
 Este diagrama representa el modelo de comunicación Publish/Subscribe (publicar/suscribirse), típico en arquitecturas orientadas a mensajes. En este esquema, los Publishers envían mensajes a un Topic (tópico) sin conocer quién los recibirá. Por su parte, los Subscribers se suscriben al tópico y reciben automáticamente todos los mensajes publicados en él. Esta arquitectura permite una comunicación desacoplada, escalable y eficiente, ideal para sistemas con múltiples emisores y receptores que deben compartir información de forma simultánea.
+
+![Image](https://github.com/user-attachments/assets/52432901-6197-4323-bb82-1d692d61bda9)
 
 
 ### 3. Ambiente de desarrollo
@@ -239,41 +243,74 @@ Este diagrama representa el modelo de comunicación Publish/Subscribe (publicar/
 ### 4. Ambiente de ejecución 
 
 ## Configuración de los servidores en AWS (EL proceso es el mismo para todos los servidores)
+
 a. Crear una instancia con Ubuntu en AWS
+
 b. Editar las reglas de entrada de la instancia y habilitar los siguientes puertos:
+
 c. Ingresar a la MV ya sea por la terminal integrada en AWS o por SSH y ejecutar los siguientes comandos:
- Para instalar la base de datos Mongo:
+
+Para instalar la base de datos Mongo:
+
 wget -qO - https://pgp.mongodb.com/server-7.0.asc | sudo tee /etc/apt/trusted.gpg.d/mongodb-server-7.0.asc
+
 echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
+
 sudo apt update && sudo apt install -y mongodb-org
+
 Para ejecutar Mongo cada que se prenda la instancia:
+
 sudo systemctl enable mongod
+
 Inicializar el servicio:
+
 sudo systemctl start mongod
+
 Verificar que Mongo este corriendo correctamente:
+
 sudo systemctl status mongod
+
 Debería verse un mensaje: Active: active (running)
+
 Instalación y configuración del proyecto:
-	git clone https://github.com/estebanm30/Proyecto-MOM.git
-	cd Proyecto-MOM/server/
+
+git clone https://github.com/estebanm30/Proyecto-MOM.git
+
+cd Proyecto-MOM/server/
+
 Crear y editar el archivo .env
-	touch .env
-	nano .env
+
+touch .env
+
+nano .env
+
 configurar el .env de la siguiente manera
+
 DB_ADDRESS = ""  (dirección para conexión con mongo)
 ZOOKEEPER_ADDRESS = "” (dirección IP de la instancia zookeeper)
 SERVER_ID = ""    (dirección IP pública (elástica) del servidor)
+
 Crear un environment e instalar dependencias:
+
 sudo apt install python3 python3-venv -y
+
 mkdir myapp && cd myapp
+
 python3 -m venv venv
+
 source venv/bin/activate
+
 pip install -r requirements.txt
+
 Hacer seed de la base de datos:
-	cd database
-	python3 seed.py
+
+cd database
+
+python3 seed.py
+
 Ya estaría configurado el servidor, únicamente habría que ejecutar en el directorio server
-	python3 main.py 
+
+python3 main.py 
 
 ## Configuración del zookeeper en AWS:
 
