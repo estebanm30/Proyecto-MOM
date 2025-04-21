@@ -1,7 +1,9 @@
 asana_kazoo==2.0.8dev
 fastapi==0.115.11
+protobuf==6.30.2
 pydantic==2.10.6
 pymongo==4.11.3
 python-dotenv==1.0.1
 termcolor==2.5.0
-
+Requests==2.32.3
+uvicorn==0.34.2
