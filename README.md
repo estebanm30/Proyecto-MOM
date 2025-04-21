@@ -136,6 +136,10 @@ FR-17	Implementar mecanismos de encriptación en el transporte de mensajes.	Los 
 
 ### 2. Diseño general
 
+### Buenas prácticas y diseño de alto nivel
+
+Para el diseño del sistema se optó por una arquitectura modular distribuida que permite una clara separación de responsabilidades, lo cual mejora significativamente la mantenibilidad, escalabilidad y testeo del código. La lógica del cliente y del servidor se organizó en módulos independientes, lo que facilita su desarrollo y evolución por separado. Dentro del servidor, se implementó una estructura basada en el patrón Modelo-Controlador, dividiendo la lógica de acceso a datos (database) y el control del flujo de operaciones (controller). Esta separación favorece la reutilización del código y la reducción del acoplamiento entre componentes. La comunicación entre servidores se realizó mediante gRPC, una tecnología elegida por su eficiencia en entornos distribuidos y por permitir llamadas remotas de alto rendimiento. Por otro lado, la interacción entre los clientes y el sistema se hizo a través de una API REST, que aporta simplicidad, compatibilidad y escalabilidad en la comunicación HTTP. Además, el uso de archivos .env para manejar variables de entorno refuerza la seguridad y la portabilidad del sistema, permitiendo adaptar fácilmente la configuración a distintos entornos de despliegue sin modificar el código fuente. Estas decisiones reflejan una orientación hacia buenas prácticas modernas de ingeniería de software, centradas en la flexibilidad, la eficiencia y la resiliencia del sistema.
+
 ### Funcionamiento General
 
 El sistema consta de tres servidores MOM que se comunican entre sí mediante gRPC. Cada uno de estos servidores posee su propia base de datos MongoDB para la persistencia de datos. Todas las colas y tópicos creados por los clientes están particionados entre los servidores. Además, cada cola y cada tópico cuenta con una réplica en otro de los servidores, lo que permite soportar posibles fallos.
@@ -238,10 +242,7 @@ El diagrama muestra el funcionamiento de un sistema de colas FIFO (First In, Fir
 
 Este diagrama representa el modelo de comunicación Publish/Subscribe (publicar/suscribirse), típico en arquitecturas orientadas a mensajes. En este esquema, los Publishers envían mensajes a un Topic (tópico) sin conocer quién los recibirá. Por su parte, los Subscribers se suscriben al tópico y reciben automáticamente todos los mensajes publicados en él. Esta arquitectura permite una comunicación desacoplada, escalable y eficiente, ideal para sistemas con múltiples emisores y receptores que deben compartir información de forma simultánea.
 
-### 3. Ambiente de desarrollo
-
-
-### 4. Ambiente de ejecución 
+### 3. Ambiente de ejecución y desarrollo
 
 ## Configuración de los servidores en AWS (EL proceso es el mismo para todos los servidores)
 
