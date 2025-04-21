@@ -23,7 +23,7 @@ El objetivo de este proyecto es diseñar e implementar un middleware orientado a
 # Objetivos
 # Objetivo General: Diseñar e implementar un middleware MOM en cluster que permita a un conjunto de aplicaciones comunicarse por colas o tópicos.
 
-#Objetivos Específicos:
+## Objetivos Específicos:
  Diseñar e implementar un API entre Cliente y MOM para la gestión de colas y tópicos, así como el envío y recepción de mensajes.
 
  Implementar RPC basados en API REST y gRPC entre Cliente y MOM, y MOM a MOM.
@@ -278,35 +278,54 @@ Ya estaría configurado el servidor, únicamente habría que ejecutar en el dire
 ## Configuración del zookeeper en AWS:
 
 a. Crear una instancia con Ubuntu en AWS
+
 b. Editar las reglas de entrada de la instancia y habilitar los siguientes puertos:
+
 c. Ingresar a la MV ya sea por la terminal integrada en AWS o por SSH y ejecutar los siguientes comandos:
 
 sudo apt update && sudo apt upgrade -y
+
 Instalar Java, ya que zookeeper lo requiere:
+
 sudo apt install openjdk-17-jre -y
-Verificar la correcta instalación con 
-	java -version
+Verificar la correcta instalación con 	java -version
 Descargar e instalar apache Zookeeper:
-	wget https://downloads.apache.org/zookeeper/stable/apache-zookeeper-3.8.3-bin.tar.gz
+
+wget https://downloads.apache.org/zookeeper/stable/apache-zookeeper-3.8.3-bin.tar.gz
+
 Descomprimir el archivo
-	tar -xvzf apache-zookeeper-3.8.3-bin.tar.gz
+
+tar -xvzf apache-zookeeper-3.8.3-bin.tar.gz
+
 Renombrar la carpeta:
-	mv apache-zookeeper-3.8.3-bin zookeeper
+
+mv apache-zookeeper-3.8.3-bin zookeeper
+
 Copiar el archivo de configuración del zookeeper
+
 cp zookeeper/conf/zoo_sample.cfg zookeeper/conf/zoo.cfg
+
 Editar el archivo:
-	nano zookeeper/conf/zoo.cfg
+
+nano zookeeper/conf/zoo.cfg
+
 Asegurarse de que este así:
 tickTime=2000
 dataDir=/var/lib/zookeeper
 clientPort=2181
 initLimit=5
 syncLimit=2
+
 Crear la carpeta de datos:
+
 sudo mkdir -p /var/lib/zookeeper
+
 sudo chown ubuntu:ubuntu /var/lib/zookeeper
+
 Configurar para que el zookeeper corra al iniciar la instancia:
+
 sudo nano /etc/systemd/system/zookeeper.service
+
 Añadir lo siguiente:
 [Unit]
 Description=Apache Zookeeper Server
@@ -333,6 +352,7 @@ sudo systemctl status zookeeper
 
 
 Estructura de colas y tópicos:
+
 {
 	_id,
 	name: ‘ ’,
@@ -342,6 +362,7 @@ Estructura de colas y tópicos:
 	owner: ‘ ’,
 	update_date: ISODate()
 }
+
 Rutas Zookeeper:
 /fallen_servers (Indica los servidores que cayeron por más de 10 minutos)
 /leader (Solo uno de los servidores mom es el lider y encargado de la redistribución en caso de fallas permanentes)
