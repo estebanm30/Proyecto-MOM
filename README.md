@@ -86,13 +86,11 @@ Los clientes pueden elegir entre recibir mensajes automáticamente o consultarlo
 
 Fase 3: Comunicación entre Servidores MOM y Seguridad
 
-FR-15	Implementar comunicación MOM-MOM mediante gRPC.	
+FR-15	Implementar comunicación de servidores mediante gRPC.	
 Los nodos del MOM pueden intercambiar mensajes de manera eficiente.
 
 FR-16	Implementar replicación de mensajes en varios nodos MOM.
 Un mensaje enviado a un nodo MOM es replicado en otros nodos disponibles.
-
-FR-17	Implementar mecanismos de encriptación en el transporte de mensajes.	Los mensajes transmitidos entre clientes y MOM están cifrados.
 
 FR-18	Permitir eliminación de tópicos y colas solo por sus creadores.	
 Si un usuario intenta borrar un tópico o cola que no creó, la API lo rechaza.
@@ -133,6 +131,8 @@ NFR-07: Persistencia de mensajes
 NFR-08: Replicación y recuperación ante fallos
 
 ### 1.2. Aspectos NO Cumplidos
+
+FR-17	Implementar mecanismos de encriptación en el transporte de mensajes.	Los mensajes transmitidos entre clientes y MOM están cifrados.
 
 ### 2. Diseño general
 
