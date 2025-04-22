@@ -54,7 +54,7 @@ def watch_servers(servers):
             print(f"✅ {sid} IS AGAIN ONLINE")
             del fallen_servers[sid]
 
-def check_for_long_failures(threshold=600):
+def check_for_long_failures(threshold=10):
     now = time.time()
     for server, t in list(fallen_servers.items()):
         if now - t >= threshold:
