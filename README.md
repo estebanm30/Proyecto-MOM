@@ -1,138 +1,139 @@
 ### Proyecto 1 Tópicos E. Telemática
 
-### Asignatura: 
+### Asignatura:
+
 ## Tópicos especiales en Telemática
 
-### Docente: 
+### Docente:
+
 ## Edwin Montoya Munera
 
 ### Por:
+
 ## Emanuel Patiño
+
 ## Esteban Muriel
+
 ## Tomás Pineda
 
 ### Escuela de ciencias e ingeniería Universidad EAFIT, sede Medellín 2025-1
 
 ## 1. Generalidades del proyecto
+
 # Introducción
 
 El objetivo de este proyecto es diseñar e implementar un middleware orientado a mensajería (MOM) que permita a un conjunto de clientes enviar y recibir mensajes de datos. Esto permitirá evidenciar, conocer y aplicar, muchas de las características subyacentes a los sistemas distribuidos que deben implementar las aplicaciones o los subsistemas base. En este caso, dicha complejidad y características del sistema distribuido serán diseñadas e implementadas en un MOM, de tal manera que para las aplicaciones usuarias sea transparente y seguro su uso.
 
-
-
 # Objetivos
+
 # Objetivo General: Diseñar e implementar un middleware MOM en cluster que permita a un conjunto de aplicaciones comunicarse por colas o tópicos.
 
 ## Objetivos Específicos:
- Diseñar e implementar un API entre Cliente y MOM para la gestión de colas y tópicos, así como el envío y recepción de mensajes.
 
- Implementar RPC basados en API REST y gRPC entre Cliente y MOM, y MOM a MOM.
+Diseñar e implementar un API entre Cliente y MOM para la gestión de colas y tópicos, así como el envío y recepción de mensajes.
+
+Implementar RPC basados en API REST y gRPC entre Cliente y MOM, y MOM a MOM.
 
 Diseñar e implementar un mecanismo de particionamiento y replicación en el clúster MOM.
 
- Diseñar e implementar unas aplicaciones cliente sencillas para probar las funcionalidades del MOM.
-
+Diseñar e implementar unas aplicaciones cliente sencillas para probar las funcionalidades del MOM.
 
 ### 1.1. Aspectos Cumplidos
 
 Requerimientos funcionales
 
-Fase 1: Conexión Cliente - MOM y API REST 
+Fase 1: Conexión Cliente - MOM y API REST
 
-
-FR-01	Un cliente debe poder conectarse al MOM mediante una API REST.	
+FR-01 Un cliente debe poder conectarse al MOM mediante una API REST.
 Un cliente envía una solicitud a la API y recibe una respuesta de conexión exitosa.
 
-FR-02	Un cliente debe poder desconectarse del MOM mediante la API REST.	
+FR-02 Un cliente debe poder desconectarse del MOM mediante la API REST.
 El cliente envía una solicitud de desconexión y recibe confirmación.
 
-FR-03	La API REST debe permitir la autenticación de usuarios.	
+FR-03 La API REST debe permitir la autenticación de usuarios.
 Un usuario debe iniciar sesión con credenciales y recibir un token de autenticación.
 
-FR-04	Solo usuarios autenticados pueden crear colas y tópicos.	
+FR-04 Solo usuarios autenticados pueden crear colas y tópicos.
 Si un usuario no autenticado intenta crear un tópico o cola.
 
-FR-05	Se debe permitir la creación y eliminación de tópicos en el MOM.	
+FR-05 Se debe permitir la creación y eliminación de tópicos en el MOM.
 Un usuario autenticado puede crear y eliminar tópicos mediante la API REST.
 
-FR-06	Se debe permitir la creación y eliminación de colas en el MOM.	
+FR-06 Se debe permitir la creación y eliminación de colas en el MOM.
 Un usuario autenticado puede crear y eliminar colas mediante la API REST.
 
-FR-07	Listar los tópicos y colas existentes.	
+FR-07 Listar los tópicos y colas existentes.
 Un usuario autenticado puede ver la lista de colas y tópicos disponibles.
 
 Fase 2: Envío y Recepción de Mensajes
 
-
-FR-08	Un cliente debe poder enviar un mensaje a un tópico.	
+FR-08 Un cliente debe poder enviar un mensaje a un tópico.
 Un mensaje es enviado a un tópico y se verifica su almacenamiento en el MOM.
 
-FR-09	Un cliente debe poder enviar un mensaje a una cola.	
+FR-09 Un cliente debe poder enviar un mensaje a una cola.
 Un mensaje es enviado a una cola y se almacena correctamente.
 
-FR-10	Un cliente debe poder recibir mensajes de un tópico.
+FR-10 Un cliente debe poder recibir mensajes de un tópico.
 Un cliente suscrito recibe un mensaje publicado en el tópico.
 
-FR-11	Un cliente debe poder recibir mensajes de una cola.	
+FR-11 Un cliente debe poder recibir mensajes de una cola.
 Un mensaje en la cola se entrega a un cliente en espera.
 
-FR-12	Los mensajes enviados deben estar asociados a un usuario.	
+FR-12 Los mensajes enviados deben estar asociados a un usuario.
 Se almacena información del remitente en cada mensaje.
-FR-13	Implementar un mecanismo de autenticación en los mensajes.	
+FR-13 Implementar un mecanismo de autenticación en los mensajes.
 Un usuario no autenticado no puede enviar ni recibir mensajes.
 
-FR-14	Implementar la opción de recibir mensajes en modo pull o push.	
+FR-14 Implementar la opción de recibir mensajes en modo pull o push.
 Los clientes pueden elegir entre recibir mensajes automáticamente o consultarlos manualmente.
 
 Fase 3: Comunicación entre Servidores MOM y Seguridad
 
-FR-15	Implementar comunicación de servidores mediante gRPC.	
+FR-15 Implementar comunicación de servidores mediante gRPC.
 Los nodos del MOM pueden intercambiar mensajes de manera eficiente.
 
-FR-16	Implementar replicación de mensajes en varios nodos MOM.
+FR-16 Implementar replicación de mensajes en varios nodos MOM.
 Un mensaje enviado a un nodo MOM es replicado en otros nodos disponibles.
 
-FR-18	Permitir eliminación de tópicos y colas solo por sus creadores.	
+FR-18 Permitir eliminación de tópicos y colas solo por sus creadores.
 Si un usuario intenta borrar un tópico o cola que no creó, la API lo rechaza.
 
-FR-19	Definir una estrategia para manejar mensajes en colas/tópicos eliminados.
+FR-19 Definir una estrategia para manejar mensajes en colas/tópicos eliminados.
 Si se borra un tópico o cola, se decide si los mensajes se transfieren o eliminan.
 
-FR-20	Implementar mecanismos básicos de tolerancia a fallos en el MOM.	
+FR-20 Implementar mecanismos básicos de tolerancia a fallos en el MOM.
 Si un nodo MOM falla, otro debe tomar su lugar sin perder datos.
-
 
 Fase 4: Escalabilidad, Despliegue y Monitoreo
 
-FR-21	Implementar particionamiento de colas y tópicos para mejorar escalabilidad.
+FR-21 Implementar particionamiento de colas y tópicos para mejorar escalabilidad.
 Los mensajes se distribuyen eficientemente entre diferentes nodos MOM.
 
-FR-22	Implementar balanceo de carga en los nodos MOM.	
+FR-22 Implementar balanceo de carga en los nodos MOM.
 Si un nodo MOM está sobrecargado, las nuevas conexiones son redirigidas a otro nodo.
 
-FR-23	Implementar logs y monitoreo del sistema.	
+FR-23 Implementar logs y monitoreo del sistema.
 Se generan registros detallados de las conexiones, mensajes y fallos en el MOM.
 
-FR-24	Desplegar el sistema en AWS y documentar el proceso.	
+FR-24 Desplegar el sistema en AWS y documentar el proceso.
 El sistema está funcionando en AWS y se proporciona documentación detallada.
 
-FR-25	Implementar métricas de rendimiento y estadísticas del uso del MOM.	Los administradores pueden consultar estadísticas de tráfico y uso de colas/tópicos.
-
+FR-25 Implementar métricas de rendimiento y estadísticas del uso del MOM. Los administradores pueden consultar estadísticas de tráfico y uso de colas/tópicos.
 
 Requerimientos no funcionales
 
 1. Rendimiento y Escalabilidad
-NFR-01: Alto rendimiento en el procesamiento de mensajes
-NFR-02: Escalabilidad horizontal
+   NFR-01: Alto rendimiento en el procesamiento de mensajes
+   NFR-02: Escalabilidad horizontal
 2. Seguridad
-NFR-04: Autenticación de usuarios
+   NFR-04: Autenticación de usuarios
 3. Tolerancia a Fallos
-NFR-07: Persistencia de mensajes
-NFR-08: Replicación y recuperación ante fallos
+   NFR-07: Persistencia de mensajes
+   NFR-08: Replicación y recuperación ante fallos
 
 ### 1.2. Aspectos NO Cumplidos
 
-FR-17	Implementar mecanismos de encriptación en el transporte de mensajes.	Los mensajes transmitidos entre clientes y MOM están cifrados.
+FR-17 Implementar mecanismos de encriptación en el transporte de mensajes. Los mensajes transmitidos entre clientes y MOM están cifrados.
 
 ### 2. Diseño general
 
@@ -162,7 +163,7 @@ El cliente ingresa sus credenciales (usuario y contraseña). Zookeeper le asigna
 
 ### Creación de colas/tópicos
 
-El cliente puede crear las colas/tópicos que considere necesarias ingresando el nombre deseado. Esta información se envía al servidor asignado mediante la API REST. El servidor crea la cola/tópico en su base de datos local y selecciona otro servidor para crear una réplica de la cola/tópico mediante gRPC. En ese servidor se crea una cola/tópico con el mismo nombre seguido del sufijo "_replica". Al finalizar, se notifica al cliente que la cola/tópico ha sido creada y replicada exitosamente.
+El cliente puede crear las colas/tópicos que considere necesarias ingresando el nombre deseado. Esta información se envía al servidor asignado mediante la API REST. El servidor crea la cola/tópico en su base de datos local y selecciona otro servidor para crear una réplica de la cola/tópico mediante gRPC. En ese servidor se crea una cola/tópico con el mismo nombre seguido del sufijo "\_replica". Al finalizar, se notifica al cliente que la cola/tópico ha sido creada y replicada exitosamente.
 
 ### Envío de mensajes a colas/tópicos
 
@@ -174,7 +175,7 @@ El cliente puede recibir mensajes de cualquier cola/tópico a la que esté suscr
 
 En el caso de los tópicos, cuando el cliente entra a la sección de tópicos se crea un hilo que se encarga de preguntar a los servidores correspondientes si tienen algún mensaje pendiente para este usuario. El mensaje no se borrará hasta que todos los clientes suscritos a dicho tópico lo reciban.
 
-Inicialmente, siempre se trata de comunicar con quien tenga la versión original de la cola/tópico (nombre sin ‘_replica’), sin embargo, en caso de que este servidor se encuentre caído, se tratará de localizar el servidor que tenga la réplica (nombre con ‘_replica’).
+Inicialmente, siempre se trata de comunicar con quien tenga la versión original de la cola/tópico (nombre sin ‘\_replica’), sin embargo, en caso de que este servidor se encuentre caído, se tratará de localizar el servidor que tenga la réplica (nombre con ‘\_replica’).
 
 ### Suscripción / Cancelación de suscripción a colas/tópicos
 
@@ -224,7 +225,6 @@ Por lo tanto, el servidor reintegrado se une al clúster en estado limpio, esper
 - No se pierda información ni se dupliquen mensajes.
 - El sistema se mantenga coherente y funcional en todo momento.
 
-
 ### Replicación
 
 En este sistema se implementó un mecanismo de replicación eventual, una estrategia que permite mayor flexibilidad y tolerancia a fallos en entornos distribuidos. La replicación eventual asegura que, con el tiempo, todos los nodos del sistema converjan hacia un mismo estado, sin necesidad de sincronización inmediata, lo cual es ideal para aplicaciones donde la disponibilidad y la escalabilidad son prioridades.
@@ -234,7 +234,6 @@ La replicación se integró a través de llamadas gRPC definidas en el archivo m
 Para distribuir el tráfico y evitar sobrecargas, si varios servidores están activos, el sistema selecciona uno de ellos de manera alterna para llevar a cabo la replicación, logrando un balance de carga simple pero efectivo. Además, se utilizó ZooKeeper para coordinar la replicación, donde se definió una ruta específica (replica) que facilita la organización y descubrimiento de los nodos involucrados en el proceso.
 
 En situaciones donde un servidor se desconecta y luego se reconecta, el sistema verifica si existen versiones replicadas en su base de datos. Si es así, sincroniza la información comparando las fechas de actualización de cada entidad para determinar si debe realizar una actualización local o enviar sus propios datos a los otros servidores. Este proceso garantiza una sincronización eficiente entre nodos, incluso después de interrupciones, contribuyendo a la robustez y resiliencia del sistema distribuido.
-
 
 ## Generalidad Arquitectonicas del proyecto
 
@@ -268,65 +267,64 @@ c. Ingresar a la MV ya sea por la terminal integrada en AWS o por SSH y ejecutar
 
 Para instalar la base de datos Mongo:
 
-wget -qO - https://pgp.mongodb.com/server-7.0.asc | sudo tee /etc/apt/trusted.gpg.d/mongodb-server-7.0.asc
+    wget -qO - https://pgp.mongodb.com/server-7.0.asc | sudo tee /etc/apt/trusted.gpg.d/mongodb-server-7.0.asc
 
-echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
+    echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
 
-sudo apt update && sudo apt install -y mongodb-org
+    sudo apt update && sudo apt install -y mongodb-org
 
 Para ejecutar Mongo cada que se prenda la instancia:
 
-sudo systemctl enable mongod
+    sudo systemctl enable mongod
 
 Inicializar el servicio:
 
-sudo systemctl start mongod
+    sudo systemctl start mongod
 
 Verificar que Mongo este corriendo correctamente:
 
-sudo systemctl status mongod
+    sudo systemctl status mongod
 
 Debería verse un mensaje: Active: active (running)
 
 Instalación y configuración del proyecto:
 
-git clone https://github.com/estebanm30/Proyecto-MOM.git
+    git clone https://github.com/estebanm30/Proyecto-MOM.git
 
-cd Proyecto-MOM/server/
+    cd Proyecto-MOM/server/
 
-Crear y editar el archivo .env
+    Crear y editar el archivo .env
 
-touch .env
+    touch .env
 
-nano .env
+    nano .env
 
-configurar el .env de la siguiente manera
-
-DB_ADDRESS = ""  (dirección para conexión con mongo)
-ZOOKEEPER_ADDRESS = "” (dirección IP de la instancia zookeeper)
-SERVER_ID = ""    (dirección IP pública (elástica) del servidor)
+configurar el .env de la siguiente manera:
+DB_ADDRESS = "mongodb://localhost:27017/"
+ZOOKEEPER_ADDRESS = "172.31.95.11” (ip privada)
+SERVER_ID = "" (dirección IP pública (elástica) del servidor)
 
 Crear un environment e instalar dependencias:
 
-sudo apt install python3 python3-venv -y
+    sudo apt install python3 python3-venv -y
 
-mkdir myapp && cd myapp
+    mkdir myapp && cd myapp
 
-python3 -m venv venv
+    python3 -m venv venv
 
-source venv/bin/activate
+    source venv/bin/activate
 
-pip install -r requirements.txt
+    pip install -r requirements.txt
 
 Hacer seed de la base de datos:
 
-cd database
+    cd database
 
-python3 seed.py
+    python3 seed.py
 
 Ya estaría configurado el servidor, únicamente habría que ejecutar en el directorio server
 
-python3 main.py 
+    python3 main.py
 
 ## Configuración del zookeeper en AWS:
 
@@ -343,26 +341,26 @@ sudo apt update && sudo apt upgrade -y
 Instalar Java, ya que zookeeper lo requiere:
 
 sudo apt install openjdk-17-jre -y
-Verificar la correcta instalación con 	java -version
+Verificar la correcta instalación con java -version
 Descargar e instalar apache Zookeeper:
 
-wget https://downloads.apache.org/zookeeper/stable/apache-zookeeper-3.8.3-bin.tar.gz
+    wget https://downloads.apache.org/zookeeper/stable/apache-zookeeper-3.8.3-bin.tar.gz
 
 Descomprimir el archivo
 
-tar -xvzf apache-zookeeper-3.8.3-bin.tar.gz
+    tar -xvzf apache-zookeeper-3.8.3-bin.tar.gz
 
 Renombrar la carpeta:
 
-mv apache-zookeeper-3.8.3-bin zookeeper
+    mv apache-zookeeper-3.8.3-bin zookeeper
 
 Copiar el archivo de configuración del zookeeper
 
-cp zookeeper/conf/zoo_sample.cfg zookeeper/conf/zoo.cfg
+    cp zookeeper/conf/zoo_sample.cfg zookeeper/conf/zoo.cfg
 
 Editar el archivo:
 
-nano zookeeper/conf/zoo.cfg
+    nano zookeeper/conf/zoo.cfg
 
 Asegurarse de que este así:
 tickTime=2000
@@ -373,59 +371,94 @@ syncLimit=2
 
 Crear la carpeta de datos:
 
-sudo mkdir -p /var/lib/zookeeper
+    sudo mkdir -p /var/lib/zookeeper
 
-sudo chown ubuntu:ubuntu /var/lib/zookeeper
+    sudo chown ubuntu:ubuntu /var/lib/zookeeper
 
 Configurar para que el zookeeper corra al iniciar la instancia:
 
-sudo nano /etc/systemd/system/zookeeper.service
+    sudo nano /etc/systemd/system/zookeeper.service
 
 Añadir lo siguiente:
 [Unit]
 Description=Apache Zookeeper Server
-After=network.target
+    After=network.target
 
-[Service]
-Type=forking
-User=ubuntu
-ExecStart=/home/ubuntu/zookeeper/bin/zkServer.sh start
-ExecStop=/home/ubuntu/zookeeper/bin/zkServer.sh stop
-Restart=always
+    [Service]
+    Type=forking
+    User=ubuntu
+    ExecStart=/home/ubuntu/zookeeper/bin/zkServer.sh start
+    ExecStop=/home/ubuntu/zookeeper/bin/zkServer.sh stop
+    Restart=always
 
-[Install]
-WantedBy=multi-user.target
-Guardar y ejecutar lo siguiente:
-sudo systemctl daemon-reload
-sudo systemctl enable zookeeper
-sudo systemctl start zookeeper
-Verificar que el zookeeper este activo
-sudo systemctl status zookeeper
+    [Install]
+    WantedBy=multi-user.target
+    Guardar y ejecutar lo siguiente:
+    sudo systemctl daemon-reload
+    sudo systemctl enable zookeeper
+    sudo systemctl start zookeeper
+    Verificar que el zookeeper este activo
+    sudo systemctl status zookeeper
 
+### 4. Como ejecutar el proyecto
 
-### 5. Información relevante
+1. ingresar e iniciar las 4 instancias en AWS (zookeeper y 3 servidores)
+2. Dentro de los 3 servidores ejecutar los comandos (recordar ya haber configurado el .env):
+   
+   cd Proyecto-MOM/server
 
+   source venv/bin/activate
+
+   python3 main.py
+
+   (Cliente)
+
+3. Desde cualquier computador personal clonar el repositorio e ingresar al directorio /client
+4. pip install -r requirements.txt
+5. ejecutar python3 main.py
+
+los clientes aceptables por el sistemas son:
+1. username: client1 - password: 1234   
+2. username: client2 - password: 1234   
+3. username: client3 - password: 1234   
+4. username: client4 - password: 1234   
+
+### 5. IPs instancias en AWS
+
+- Zookeeper: 34.193.123.26
+- Server 1: 44.194.117.112
+- Server 2: 44.214.10.205
+- Server 3: 52.86.105.153
+
+### 6. Información relevante
 
 Estructura de colas y tópicos:
 
 {
-	_id,
-	name: ‘ ’,
-	subscribers = [],
-	messages: [],
-	pending_messages: {},
-	owner: ‘ ’,
-	update_date: ISODate()
+\_id,
+name: ‘ ’,
+subscribers = [],
+messages: [],
+pending_messages: {},
+owner: ‘ ’,
+update_date: ISODate()
 }
 
 Rutas Zookeeper:
 /fallen_servers (Indica los servidores que cayeron por más de 10 minutos)
-/leader (Solo uno de los servidores mom es el lider y encargado de la redistribución en caso de fallas permanentes)
-/mom_queues (Localiza quienes tienen las colas originales)
-/mom_queues_replicas (Localiza quienes tienen las réplicas de las  colas originales)
-/mom_topics (Localiza quienes tienen los tópicos originales) 
-/mom_topics_replicas (Localiza quienes tienen las réplicas de los tópicos originales)
-/round_robin_index (Permite usar el RB para la replicación de los datos)
-/servers (indica cuáles servidores están disponibles en el momento)
-/tokens (Almacena los tokens de usuarios autenticados, para cada operación se verifica que el token del cliente que hace la petición esté guardada acá)
 
+/leader (Solo uno de los servidores mom es el lider y encargado de la redistribución en caso de fallas permanentes)
+
+/mom_queues (Localiza quienes tienen las colas originales)
+
+/mom_queues_replicas (Localiza quienes tienen las réplicas de las colas originales)
+
+/mom_topics (Localiza quienes tienen los tópicos originales)
+
+/mom_topics_replicas (Localiza quienes tienen las réplicas de los tópicos originales)
+
+/round_robin_index (Permite usar el RB para la replicación de los datos)
+
+/servers (indica cuáles servidores están disponibles en el momento)
+
+/tokens (Almacena los tokens de usuarios autenticados, para cada operación se verifica que el token del cliente que hace la petición esté guardada acá)
